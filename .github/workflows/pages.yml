@@ -1,7 +1,5 @@
-# Publishes web/ as a static GitHub Pages site on every push to main. There is no server: the page
-# decrypts the study data in web/data/ in the reader's browser with an access code that raters receive
-# privately, keeps annotations in the browser, and raters export them as a file.
-# The build refuses to publish if plaintext study data or the study's name appears in the site.
+# Publishes web/ as a static GitHub Pages site on every push to main. There is no server: the page loads
+# the audit data from web/data/, keeps annotations in the rater's browser, and raters export them as a file.
 name: pages
 on:
   push:
@@ -23,20 +21,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: No plaintext study data in the site
+      - name: Data is complete
         run: |
-          bad=$(find web/data -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.mp3' \
-                 -o -iname '*.wav' -o -name 'manifest.js' -o -name 'manifest.json' \) 2>/dev/null || true)
-          if [ -n "$bad" ]; then echo "::error::plaintext data in web/data:"; echo "$bad"; exit 1; fi
-
-      - name: Encrypted data is complete
-        run: |
-          jq -e '.format == "ophth-audit-enc-v1" and (.kdf.iterations >= 100000) and (.manifest | type == "string")' \
-            web/data/meta.json > /dev/null || { echo "::error::web/data/meta.json is missing or not ophth-audit-enc-v1"; exit 1; }
-          n=$(jq -r '.n_cases' web/data/meta.json)
-          test -f "web/data/$(jq -r '.manifest' web/data/meta.json)" || { echo "::error::encrypted manifest missing"; exit 1; }
-          ni=$(find web/data/images -name '*.bin' | wc -l)
-          test "$ni" -ge "$n" || { echo "::error::$ni encrypted images for $n cases"; exit 1; }
+          test -f web/data/manifest.js || { echo "::error::web/data/manifest.js missing"; exit 1; }
 
       - name: Neutral naming (double-blind)
         run: |

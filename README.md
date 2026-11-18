@@ -5,14 +5,13 @@ description paired with it, and the narration it was derived from (an automatic 
 Raters answer a 7-question rubric with the keyboard or the mouse; their answers are saved in their own browser, and
 they export a file at the end of each sitting. There is no server and no account.
 
-The study data in `web/data/` is **encrypted**. The page decrypts it inside the rater's browser with an access code
-that raters receive privately. Without the code, the files are unreadable.
+The audit cases (images, descriptions, narration transcripts and audio) are in `web/data/` (`manifest.js`,
+`images/`, `audio/`). Raters identify themselves by name, role and years of experience when they start; their
+answers are stored per rater.
 
 ## For raters
 
-1. **Open the link you received.** If it ends in `#key=…`, the page opens directly. Otherwise, enter the access code
-   you received; capitals, spaces and dashes do not matter. On your own computer, keep **Remember on this computer**
-   checked, so that you do not need the code again. Use Chrome or Edge, and not a private window (it would forget
+1. **Open https://llm-vlm-gsl.github.io/Ophth-Auditor/** in Chrome or Edge, not in a private window (it would forget
    your answers).
 2. **Enter your full name**, your role and your years of experience. Your answers are saved in this browser under
    that name: to continue later, open the page again on the same computer and browser and type the same name.
@@ -22,7 +21,6 @@ that raters receive privately. Without the code, the files are unreadable.
 4. **At the end of each sitting, and when you finish, click Export JSON** and send the downloaded file
    (`ophth_audit_<your-name>_<date-time>.json`) to the study team, the way they asked. CSV and Excel are copies for
    your own use. **Load annotations** brings answers from an exported file back (for example on another computer).
-5. On a shared computer, click **Switch → Lock / forget code** when you are done.
 
 Please do not share, copy, upload or screenshot the images and texts, and do not forward the link or the code.
 

@@ -1562,7 +1562,7 @@
     if (ids !== QIDS.join(", ")) return fatal("The rubric does not match this page", "guidelines.js has the questions " + ids + "; this page expects " + QIDS.join(", ") + ".");
     for (const q of G.questions) { OPT[q.id] = {}; for (const o of q.options) OPT[q.id][o.code] = o; }
     if (!DATA_OK) return fatal("Unsupported data folder", "?data= must be a folder relative to index.html (got “" + DATA + "”).");
-    if (onSite) {                                   // served over http(s): encrypted data when <data>/meta.json says so
+    if (onSite && CFG.encrypted !== false) {                                   // served over http(s): encrypted data when <data>/meta.json says so
       let meta = null;
       try {
         const r = await fetch(DATA + "/meta.json", { cache: "no-cache" });
