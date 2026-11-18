@@ -7,8 +7,10 @@
 //                                                    serves web/ with it as data/ on http://127.0.0.1, and tests the
 //                                                    access dialog, remembered keys, Lock, #key= links, decryption
 //                                                    of every image and audio clip, errors, exports
-//   node tests/e2e.mjs real <outdir> <code file>    serves web/ as it is (its encrypted data/) and opens every case
-//                                                    with the code from <code file>; screenshots in <outdir>
+//   node tests/e2e.mjs real <outdir> [code file]    serves web/ as it is, with its own data/, on http://127.0.0.1 (like
+//                                                    GitHub Pages) and opens every case, checking that its image and
+//                                                    audio load; screenshots at 1366x768, bright and dark, and narrow.
+//                                                    The code file is needed (and read) only when data/ is encrypted
 // Env: CHROME (browser path), PYTHON (Python with cryptography, pandas, openpyxl; default "python").
 // Exits non-zero on a failed check, a page error or a console error. Downloads and screenshots go to <outdir>
 // (default: a folder in the system temp directory). Keep <outdir> outside the repository.
@@ -22,7 +24,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const HERE = dirname(fileURLToPath(import.meta.url)), ROOT = resolve(HERE, "..");
 const [mode = "plain", outArg, codeArg] = process.argv.slice(2);
 if (!["plain", "encrypted", "real"].includes(mode)) { console.error("mode: plain | encrypted | real"); process.exit(2); }
-if (mode === "real" && !codeArg) { console.error("real mode: node tests/e2e.mjs real <outdir> <code file>"); process.exit(2); }
+if (mode === "real" && !outArg) { console.error("real mode: node tests/e2e.mjs real <outdir> [code file]"); process.exit(2); }
 const outdir = resolve(outArg || join(tmpdir(), "audit-e2e-" + mode));
 const PY = process.env.PYTHON || "python";
 rmSync(outdir, { recursive: true, force: true });
@@ -59,7 +61,8 @@ if (mode !== "plain") {
       "--code-file", join(tmpRoot, "code.txt")], { encoding: "utf8" }).trim().split("\n").map((l) => "     | " + l).join("\n"));
   }
   const port = await freePort(8790);
-  server = spawn(PY, ["-B", join(HERE, "serve.py"), "--port", String(port), ...(encDir ? ["--data", encDir] : [])], { stdio: ["ignore", "ignore", "inherit"] });
+  if (encDir) writeFileSync(join(tmpRoot, "config.js"), "window.AUDIT_CONFIG = { server: false, encrypted: true };\n");
+  server = spawn(PY, ["-B", join(HERE, "serve.py"), "--port", String(port), ...(encDir ? ["--data", encDir, "--config", join(tmpRoot, "config.js")] : [])], { stdio: ["ignore", "ignore", "inherit"] });
   URL0 = `http://127.0.0.1:${port}/`;
   let up = false;
   for (let i = 0; i < 100 && !up; i++) { try { up = (await fetch(URL0)).ok; } catch (e) { await sleep(150); } }
@@ -118,21 +121,22 @@ async function waitDownloads(n, ms = 10000) {
 const ann = (id) => js(`JSON.stringify(AUDIT_APP.annotation(${JSON.stringify(id)})||null)`).then((s) => JSON.parse(s));
 const answers = (a) => (a ? [a.q1_ophthalmic, a.q2_modality, a.q3_crop, a.q4_image_text, a.q5_faithful, a.q6_clinical, a.q7_pii].join(",") : "");
 const visible = (id) => js(`!document.getElementById(${JSON.stringify(id)}).hidden`);
-async function startSession(name, role, years, expectWelcome) {
+async function startSession(name, expectWelcome) {
   check("session dialog shown", await until(`!document.getElementById("sessBox").hidden`));
   if (mode === "plain" && !existsSync(join(outdir, "d1_session.png"))) await shot("d1_session.png");
-  await js(`(()=>{const n=document.getElementById("sName");n.value=${JSON.stringify(name)};n.dispatchEvent(new Event("input"));
-    const r=document.getElementById("sRole");if(${JSON.stringify(role)})r.value=${JSON.stringify(role)};
-    const y=document.getElementById("sYears");if(${JSON.stringify(String(years))}!=="")y.value=${JSON.stringify(String(years))};})()`);
+  await js(`(()=>{const n=document.getElementById("sName");n.value=${JSON.stringify(name)};n.dispatchEvent(new Event("input"))})()`);
   await js(`document.getElementById("sGo").click()`);
   await sleep(500);
   if (expectWelcome) {
-    check("welcome dialog shown for a new rater", await until(`!document.getElementById("welcomeBox").hidden`));
+    check("welcome dialog shown for someone new", await until(`!document.getElementById("welcomeBox").hidden`));
     if (mode === "plain" && !existsSync(join(outdir, "d2_welcome.png"))) await shot("d2_welcome.png");
     await js(`document.getElementById("wOk").click()`);
     await sleep(300);
   }
 }
+// what a reviewer can read on the page (hidden parts excluded): plain words only
+const shownText = () => js(`document.body.innerText`);
+const TECH = /\b(server|slug|manifest|export(ed|s)?|serve\.py|api|localStorage|rater)\b/i;
 async function loadFileInput(path) {
   const doc = await cdp("DOM.getDocument");
   const nd = await cdp("DOM.querySelector", { nodeId: doc.root.nodeId, selector: "#loadFile" });
@@ -199,9 +203,17 @@ process.exit(failed ? 1 : 0);
 
 // ------------------------------------------------------------------ file:// with the plaintext fixture: the whole flow
 async function plain() {
-  check("the case list loads (fixture-v1, 6 cases)", (await js(`document.getElementById("setInfo").textContent`)).includes("fixture-v1 · 6 cases"), await js(`document.getElementById("setInfo").textContent`));
+  check("the cases load (fixture-v1, 6 cases)", (await js(`document.getElementById("setInfo").textContent`)).includes("fixture-v1") && (await js(`document.getElementById("nTotal").textContent`)) === "6", await js(`document.getElementById("setInfo").textContent`));
   check("plaintext mode, no access dialog", (await js(`AUDIT_APP.state.mode`)) === "plain" && (await js(`document.getElementById("accessBox").hidden`)));
-  check("visible title is neutral", (await js(`document.title`)) === "Ophthalmic image–description audit" && (await js(`document.querySelector(".brand h1").textContent`)) === "Ophthalmic image–description audit");
+  check("visible title is neutral", (await js(`document.title`)) === "Ophthalmic image–description audit" && (await js(`document.querySelector(".brand .eyebrow").textContent`)) === "Ophthalmic image–description audit");
+  check("the task is the headline, with one sentence under it (guidelines.js)", (await js(`document.getElementById("question").textContent`)) === (await js(`AUDIT_GUIDELINES.question`)) &&
+    (await js(`document.getElementById("task").querySelectorAll("b").length`)) >= 2, await js(`document.getElementById("question").textContent`));
+  check("bright by default; the eye offers dark", (await js(`!document.documentElement.dataset.theme && document.getElementById("themecap").textContent==="Switch to dark" && document.getElementById("theme").title==="Switch to dark" && !!document.querySelector("#themebadge svg")`)));
+  check("the eye is the only theme switch (no separate button)", (await js(`document.querySelectorAll("#themeBtn,.top .icon").length`)) === 0 && (await js(`document.querySelector(".top").firstElementChild.id`)) === "theme");
+  check("top right: who over saved, How to, Load over Download", (await js(`[...document.querySelector(".top-right").children].map(e=>e.className||e.id).join("|")`)) === "status|howto|stack" &&
+    (await js(`[...document.querySelector(".stack").children].map(b=>b.textContent).join("|")`)) === "Load annotations|Download annotations" &&
+    (await js(`[...document.querySelector(".status").children].map(e=>e.id).join("|")`)) === "who|save");
+  check("How to stands out: accent pill, floating", (await js(`getComputedStyle(document.getElementById("help")).animationName`)) === "howto" && (await js(`document.getElementById("help").textContent`)) === "?How to");
   check("robots: noindex, nofollow", (await js(`document.querySelector('meta[name=robots]').content`)) === "noindex, nofollow");
   // slug rule: the page and the Python rule of tests/check_exports.py agree
   const names = ["Dr. Jane O'Neil", "  Jane   Doe ", "Élodie Müller-Smith", "María José Pérez", "A".repeat(50), "x ".repeat(30), "---", "李 明", "Kelvin \u212A Test"];
@@ -214,16 +226,22 @@ async function plain() {
 
   await js(`(()=>{document.getElementById("sName").value=" ";document.getElementById("sGo").click()})()`);
   check("an empty name is refused", (await js(`document.getElementById("sErr").textContent`)).includes("enter your name"));
-  check("only the name is asked (no role, no years)", await js(`document.getElementById("sRole").closest(".frow").hidden`));
+  check("only the name is asked (no role, no years)", (await js(`document.querySelectorAll("#sessBox input,#sessBox select").length`)) === 1 && (await js(`document.querySelector("#sessBox h2").textContent`)) === "Who is annotating?");
+  await js(`(()=>{const n=document.getElementById("sName");n.value="Jane";n.dispatchEvent(new Event("input"));document.getElementById("sGo").click()})()`);
+  check("a new session needs the full name, first and last", (await js(`document.getElementById("sErr").textContent`)).includes("full name, first and last") &&
+    (await js(`document.getElementById("sRes").textContent`)).includes("No session was found for “Jane”") && (await js(`document.getElementById("sGo").textContent`)) === "Start a new session", await js(`document.getElementById("sRes").textContent`));
   check("no Lock button without encrypted data", await js(`document.getElementById("sLock").hidden`));
-  await startSession("Dr. Jane O'Neil", "ophthalmologist", 7, true);
+  await startSession("Dr. Jane O'Neil", true);
+  check("the welcome is short, names How to and the eye, and gives the guidelines in short", (await js(`(()=>{const w=document.getElementById("welcomeBox").textContent;return w.includes("How to")&&w.includes("eye")&&document.getElementById("wRules").textContent.includes("description")&&document.querySelectorAll("#welcomeBox .steps li").length===4})()`)));
+  check("Reviewer: <name> over the saved state", (await js(`document.getElementById("who").textContent`)).startsWith("Reviewer: Dr. Jane O'Neil"));
   check("session on, slug per the rule", (await js(`AUDIT_APP.state.slug`)) === "dr-jane-o-neil");
   check("storage key holds manifest_version and slug", (await js(`AUDIT_APP.state.storeKey`)) === "ophth-audit:ann:fixture-v1:dr-jane-o-neil");
-  check("case 1 shown", (await js(`document.getElementById("caseId").textContent`)) === "T001");
+  check("case 1 shown", (await js(`document.getElementById("caseId").textContent`)) === "T001" && (await js(`document.getElementById("caseTitle").textContent`)) === "Case 1 / 6");
   check("image loaded", await until(`document.getElementById("img").naturalWidth>0`));
   check("description shown", (await js(`document.getElementById("caption").textContent`)).startsWith("Optical coherence tomography B-scan"));
   check("English transcript, no language line", (await js(`document.getElementById("langInfo").textContent`)) === "" && (await js(`document.getElementById("transcript").textContent`)).startsWith("Here you can see"));
   check("q2 offers 7 answers incl. Multi (key 6)", (await js(`[...document.querySelectorAll('[data-q=q2_modality] .opt')].map(b=>b.textContent).join("|")`)) === "1OCT|2CFP|3UWF|4Angio|5Other|6Multi|7Unsure");
+  check("plain words only on the page", !TECH.test(await shownText()), ((await shownText()).match(TECH) || [])[0]);
   await shot("f1_case1.png");
 
   await sleep(2200);                                         // some time on the case
@@ -292,20 +310,27 @@ async function plain() {
   check("+ zooms in (Reset view enabled)", !(await js(`document.getElementById("resetBtn").disabled`)));
   await key("0");
   check("0 resets the view", await js(`document.getElementById("resetBtn").disabled`));
-  await key("f");
-  check("F opens the full-size view", await until(`!document.getElementById("viewer").hidden && document.getElementById("vimg").naturalWidth>0`));
+  await key("Enter");
+  check("Enter opens the full-size view", await until(`!document.getElementById("viewer").hidden && document.getElementById("vimg").naturalWidth>0`));
   await shot("f3_viewer.png");
+  await key("Enter");
+  check("Enter closes it", await js(`document.getElementById("viewer").hidden`));
+  await key("f");
+  check("F opens it too", await until(`!document.getElementById("viewer").hidden`));
   await key("Escape");
   check("Esc closes it", await js(`document.getElementById("viewer").hidden`));
-  await key("g");
-  check("G opens the guide with the full rubric", (await js(`!document.getElementById("guideBox").hidden && document.querySelectorAll("#gRubric .rq").length===7 && document.getElementById("gRubric").textContent.includes("Multi")`)));
-  check("the guide does not mention the audit server here", await js(`document.getElementById("gServer").hidden`));
-  await shot("d3_guide.png");
+  await click("#help");
+  check("How to: the full rubric, the guidelines and the keys", (await js(`!document.getElementById("helpBox").hidden && document.querySelectorAll("#gRubric .rq").length===7 && document.getElementById("gRubric").textContent.includes("Multi") && document.querySelectorAll("#gNotes li").length>3 && document.querySelectorAll("#keysTable tr").length>=10`)));
+  check("How to names the eye, and says how annotations are kept (no server words)", (await js(`document.getElementById("helpBox").textContent.includes("eye at the top left")`)) && !TECH.test(await js(`document.getElementById("helpBox").innerText`)));
+  await shot("d3_howto.png");
   await key("Escape");
+  check("Esc closes How to", await js(`document.getElementById("helpBox").hidden`));
   await key("?", {});
-  check("? shows the shortcuts", await js(`!document.getElementById("keysBox").hidden`));
+  check("? opens How to", await js(`!document.getElementById("helpBox").hidden`));
   await key("Escape");
-  check("Esc closes the shortcuts", await js(`document.getElementById("keysBox").hidden`));
+  await key("g");
+  check("G opens How to", await js(`!document.getElementById("helpBox").hidden`));
+  await key("Escape");
   await key("e");
   await key("5");
   check("E focuses the note; 5 is typed, not an answer", (await js(`document.getElementById("note").value`)) === "5" && !(await ann("T004")).q1_ophthalmic);
@@ -315,6 +340,13 @@ async function plain() {
   check("note with comma, quotes, newline and accent saved", (await ann("T004")).note === NOTE4, (await ann("T004")).note);
   await key("n");
   check("N: next case still to do (case 5)", (await js(`AUDIT_APP.state.id`)) === "T005");
+  await key("ArrowLeft");
+  await js(`(()=>{const g=document.getElementById("goto");g.value="zz9";g.dispatchEvent(new KeyboardEvent("keydown",{key:"Enter",bubbles:true}))})()`);
+  check("Go to: not found, the box flashes red", (await js(`document.getElementById("goto").classList.contains("bad")`)) && (await js(`AUDIT_APP.state.id`)) === "T004");
+  await js(`(()=>{const g=document.getElementById("goto");g.value="t003";g.dispatchEvent(new KeyboardEvent("keydown",{key:"Enter",bubbles:true}))})()`);
+  check("Go to: an ID (any case)", (await js(`AUDIT_APP.state.id`)) === "T003");
+  await js(`(()=>{const g=document.getElementById("goto");g.value="5";g.dispatchEvent(new KeyboardEvent("keydown",{key:"Enter",bubbles:true}))})()`);
+  check("Go to: a number in range is a case number", (await js(`AUDIT_APP.state.id`)) === "T005");
   await key("ArrowLeft");
   check("progress 3 / 6 and median shown", (await js(`document.getElementById("pDone").textContent`)) === "3 / 6" && /\d+ s/.test(await js(`document.getElementById("pMed").textContent`)), await js(`document.getElementById("pMed").textContent`));
   await js(`document.querySelector('#filter [data-f=flag]').click()`);
@@ -328,30 +360,40 @@ async function plain() {
   await sleep(400);
   await key("ArrowLeft"); await key("ArrowLeft"); await key("ArrowLeft");
   await layoutChecks("1366x657");
-  await shot("f4_1366x657_light.png");
-  await js(`document.getElementById("themeBtn").click()`);
-  check("theme switch: dark, and remembered", (await js(`document.documentElement.dataset.theme`)) === "dark" && (await js(`localStorage.getItem("ophth-audit:theme")`)) === "dark");
+  await shot("f4_1366x657_bright.png");
+  await click("#theme");
+  check("the eye switches to dark, says 'Switch to bright', and the choice is kept", (await js(`document.documentElement.dataset.theme`)) === "dark" &&
+    (await js(`localStorage.getItem("ophth-audit:theme")`)) === "dark" && (await js(`document.getElementById("themecap").textContent`)) === "Switch to bright" && (await js(`document.getElementById("theme").getAttribute("aria-label")`)) === "Switch to bright");
   await key("ArrowRight");
+  await layoutChecks("1366x657 dark");
   await shot("f5_1366x657_dark.png");
-  await js(`document.getElementById("themeBtn").click()`);
+  await narrowChecks();
   await cdp("Emulation.clearDeviceMetricsOverride");
 
   const dBefore = dialogs.length;
   await cdp("Page.reload"); await sleep(1800);
+  check("dark is kept after a reload, set before the page draws", (await js(`document.documentElement.dataset.theme`)) === "dark" && (await js(`document.getElementById("themecap").textContent`)) === "Switch to bright");
+  await js(`document.getElementById("theme").click()`);   // (the name dialog covers the page)
+  check("…and back to bright", !(await js(`document.documentElement.dataset.theme==="dark"`)) && (await js(`document.getElementById("themecap").textContent`)) === "Switch to dark");
   check("unload warning when answers were not exported", dialogs.slice(dBefore).includes("beforeunload"), dialogs);
   check("same browser: the last name is prefilled", (await js(`document.getElementById("sName").value`)) === "Dr. Jane O'Neil");
-  check("…and its saved work is found", (await js(`document.getElementById("sFound").textContent`)).includes("3 of 6 cases complete"), await js(`document.getElementById("sFound").textContent`));
+  check("…and its session is found", (await js(`document.getElementById("sRes").textContent`)).includes("3 of 6 annotated") && (await js(`document.getElementById("sGo").textContent`)) === "Continue", await js(`document.getElementById("sRes").textContent`));
   await js(`document.getElementById("sGo").click()`); await sleep(600);
   check("resumed: no welcome, 3 / 6, at the first case still to do", (await js(`document.getElementById("welcomeBox").hidden`)) && (await js(`document.getElementById("pDone").textContent`)) === "3 / 6" && (await js(`AUDIT_APP.state.id`)) === "T004");
   check("answers and notes survived the reload", answers(await ann("T002")) === "yes,multi,partial,none,cant_judge,minor,yes" && (await ann("T002")).note === "Name 123 " && (await ann("T004")).note.startsWith("5, "));
 
   await key("s", { mod: 2 }); await sleep(700);                 // Ctrl+S = Export JSON
-  check("Ctrl+S exports JSON", (await waitDownloads(1, 5000)).some((f) => f.endsWith(".json")));
-  await js(`document.getElementById("expCsv").click()`); await sleep(700);
-  await js(`document.getElementById("expXlsx").click()`);
+  check("Ctrl+S downloads the JSON file", (await waitDownloads(1, 5000)).some((f) => f.endsWith(".json")));
+  await click("#dlBtn");
+  check("Download annotations: one dialog with Excel, CSV and JSON and how far you are", (await js(`!document.getElementById("dlBox").hidden && document.getElementById("dlSum").textContent.startsWith("3 of 6 cases annotated (3 still to do")`)) &&
+    (await js(`[...document.querySelectorAll("#dlBox .row button")].map(b=>b.textContent).join("|")`)) === "Excel (.xlsx)|CSV|JSON|Close", await js(`document.getElementById("dlSum").textContent`));
+  await shot("d4_download.png");
+  await js(`document.getElementById("dlCsv").click()`); await sleep(700);
+  await click("#dlBtn");
+  await js(`document.getElementById("dlXlsx").click()`);
   const files = await waitDownloads(3);
   check("JSON, CSV and XLSX downloaded as ophth_audit_<slug>_<stamp>", ["json", "csv", "xlsx"].every((e) => files.some((f) => f.endsWith("." + e))), files);
-  check("status says exported", (await js(`document.getElementById("save").textContent`)).includes("exported"), await js(`document.getElementById("save").textContent`));
+  check("the dialog closes after a download; status says downloaded", (await js(`document.getElementById("dlBox").hidden`)) && (await js(`document.getElementById("save").textContent`)).includes("downloaded"), await js(`document.getElementById("save").textContent`));
   const expected = { manifest_version: "fixture-v1", rater: { name: "Dr. Jane O'Neil", role: "", years_experience: null },
     answers: {
       T001: { q1_ophthalmic: "yes", q2_modality: "oct", q3_crop: "good", q4_image_text: "full", q5_faithful: "partial", q6_clinical: "correct", q7_pii: "no", note: "" },
@@ -365,7 +407,7 @@ async function plain() {
   const csvFile = join(outdir, files.find((f) => f.endsWith(".csv")));
 
   check("no unload warning right after an export", (await freshStorage()).length === 0);
-  await startSession("Dr. Jane O'Neil", "ophthalmologist", 7, true);
+  await startSession("Dr. Jane O'Neil", true);
   check("storage cleared: 0 / 6", (await js(`document.getElementById("pDone").textContent`)) === "0 / 6");
   await loadFileInput(xlsxFile);
   check("XLSX loaded: 4 cases taken", (await askText()).includes("4 cases taken"), await askText());
@@ -404,12 +446,17 @@ async function plain() {
   j.rater.name = "Someone Else";
   writeFileSync(join(outdir, "merge", "other.json"), JSON.stringify(j));
   await loadFileInput(join(outdir, "merge", "other.json"));
-  check("another rater's file: asks first", (await askText()).includes("another rater"), await askText());
+  check("another reviewer's file: asks first", (await askText()).includes("another reviewer"), await askText());
   await askClick(false); await sleep(200);
   check("…and Cancel merges nothing", (await js(`document.getElementById("askBox").hidden`)) && (await ann("T001")).q3_crop === "bad");
   await js(`document.getElementById("switchBtn").click()`); await sleep(300);
-  check("Switch opens the session dialog with Cancel and the saved session", (await js(`!document.getElementById("sCancel").hidden && document.getElementById("sSaved").textContent.includes("Jane O'Neil")`)));
-  await startSession("Second Rater", "optometrist", 2, true);
+  check("Switch opens the session dialog with Cancel, and lists no names before one is typed", (await js(`!document.getElementById("sCancel").hidden && document.getElementById("sRes").textContent===""`)));
+  await js(`(()=>{const n=document.getElementById("sName");n.value="jane";n.dispatchEvent(new Event("input"))})()`);
+  check("a word of the name finds the session (“Is one of them yours?”)", (await js(`document.getElementById("sRes").textContent`)).includes("Is one of them yours?") &&
+    (await js(`[...document.querySelectorAll("#sRes .sess span")].map(s=>s.textContent).join("|")`)) === "Dr. Jane O'Neil", await js(`document.getElementById("sRes").textContent`));
+  await js(`document.querySelector("#sRes .sess").click()`);
+  check("…choosing it fills the name: Continue", (await js(`document.getElementById("sName").value`)) === "Dr. Jane O'Neil" && (await js(`document.getElementById("sGo").textContent`)) === "Continue");
+  await startSession("Second Rater", true);
   check("a second rater starts empty", (await js(`document.getElementById("pDone").textContent`)) === "0 / 6" && (await js(`AUDIT_APP.state.slug`)) === "second-rater");
   await shot("f6_end.png");
 }
@@ -418,14 +465,40 @@ async function layoutChecks(tag) {
   const lay = JSON.parse(await js(`JSON.stringify({sw:document.documentElement.scrollWidth,w:innerWidth,
     top:document.querySelector(".top").scrollWidth<=document.querySelector(".top").clientWidth+1,
     cut:[...document.querySelectorAll(".opt span,.qt")].filter(s=>s.scrollWidth>s.clientWidth+1).map(s=>s.textContent),
-    rows:[...document.querySelectorAll(".q")].filter(r=>{const b=r.getBoundingClientRect();return b.top>=0&&b.bottom<=innerHeight}).length,
+    rows:[...document.querySelectorAll("#qlist .q")].filter(r=>{const b=r.getBoundingClientRect();return b.top>=0&&b.bottom<=innerHeight}).length,
     cap:(()=>{const b=document.getElementById("caption").getBoundingClientRect();return b.top>=0&&b.top<innerHeight-40})(),
-    h1:(()=>{const h=document.querySelector(".brand h1");return h.scrollWidth<=h.clientWidth+1})()})`));
+    h1:(()=>{const h=document.querySelector(".brand h1");return h.scrollWidth<=h.clientWidth+1})(),
+    sub:(()=>{const h=document.getElementById("task");return h.scrollWidth<=h.clientWidth+1})(),
+    save:(()=>{const h=document.getElementById("save");return h.scrollWidth<=h.clientWidth+1})()})`));
   check(tag + ": no horizontal scroll", lay.sw <= lay.w, lay);
-  check(tag + ": header fits, title not cut", lay.top && lay.h1);
+  check(tag + ": header fits, headline and the sentence under it not cut", lay.top && lay.h1 && lay.sub, lay);
+  check(tag + ": the saved state is not cut", lay.save);
   check(tag + ": no cut-off answer labels", lay.cut.length === 0, lay.cut);
   check(tag + ": all 7 questions visible", lay.rows === 7, lay.rows);
   check(tag + ": description visible", lay.cap);
+}
+
+// narrower windows: 1000 px (queue at the side, texts and questions under the image) and phone widths (< 900 px,
+// Retify's rule: the queue moves below the case)
+async function narrowChecks() {
+  for (const [w, h, name] of [[1000, 760, "n1_1000_dark.png"], [820, 1000, "n2_820_dark.png"], [420, 860, "n3_420_dark.png"]]) {
+    await cdp("Emulation.setDeviceMetricsOverride", { width: w, height: h, deviceScaleFactor: 1, mobile: false });
+    await sleep(500);
+    await js(`scrollTo(0,0)`);
+    const L = JSON.parse(await js(`JSON.stringify((()=>{const r=(s)=>document.querySelector(s).getBoundingClientRect();return {sw:document.documentElement.scrollWidth,
+      side:r(".side"),center:r(".center"),panel:r(".panel"),stage:r("#stage"),img:document.getElementById("img").naturalWidth}})())`));
+    check(w + " px: no horizontal scroll", L.sw <= w, L.sw);
+    if (w > 900) check(w + " px: queue at the side, questions under the image", L.side.left < L.center.left && L.panel.top >= L.center.bottom - 1 && L.stage.height > 250, L);
+    else check(w + " px: stacked, the queue below the case, full width", L.center.top < L.panel.top && L.panel.bottom <= L.side.top + 1 && L.side.width >= w - 40 && L.stage.height > 200, L);
+    await shot(name);
+  }
+  await cdp("Emulation.setDeviceMetricsOverride", { width: 420, height: 860, deviceScaleFactor: 1, mobile: false });
+  await click("#theme");
+  await sleep(300);
+  await js(`scrollTo(0,0)`);
+  await shot("n4_420_bright.png");
+  await click("#theme");
+  await js(`scrollTo(0,0)`);
 }
 
 function checkExports(expected) {
@@ -466,7 +539,7 @@ async function encrypted() {
   check("…and never the code itself", !(await js(`JSON.stringify(Object.entries(localStorage))`)).includes("jkmn"));
   check("Lock / forget code offered in the session dialog", await visible("sLock"));
 
-  await startSession("Enc Tester", "researcher", 2, true);
+  await startSession("Enc Tester", true);
   check("encrypted mode, 6 cases", (await js(`AUDIT_APP.state.mode`)) === "encrypted" && (await js(`AUDIT_APP.state.n`)) === 6);
   check("case 1: the image is decrypted into a blob: URL", await until(`document.getElementById("img").src.startsWith("blob:") && document.getElementById("img").naturalWidth===640`));
   check("case 1: the audio is decrypted and plays", (await until(`document.getElementById("audio").src.startsWith("blob:") && document.getElementById("audio").readyState>=1 && document.getElementById("audio").duration>2.5`)));
@@ -496,8 +569,8 @@ async function encrypted() {
   check("cases 4-6: every image and audio clip decrypts", bad.length === 0, bad);
   check("only the cases around the current one stay decrypted", (await js(`AUDIT_APP.blobs()`)) <= 12, await js(`AUDIT_APP.blobs()`));
   await key("s", { mod: 2 }); await sleep(700);
-  await js(`document.getElementById("expCsv").click()`); await sleep(700);
-  await js(`document.getElementById("expXlsx").click()`);
+  await js(`document.getElementById("dlCsv").click()`); await sleep(700);
+  await js(`document.getElementById("dlXlsx").click()`);
   const files = await waitDownloads(3);
   check("JSON, CSV and XLSX downloaded", ["json", "csv", "xlsx"].every((e) => files.some((f) => f.endsWith("." + e))), files);
   checkExports({ manifest_version: "fixture-v1", rater: { name: "Enc Tester", role: "", years_experience: null },
@@ -513,7 +586,7 @@ async function encrypted() {
   await js(`document.getElementById("sGo").click()`); await sleep(600);
   check("…and the work is resumed (2 / 6)", (await js(`document.getElementById("pDone").textContent`)) === "2 / 6" && (await js(`AUDIT_APP.state.id`)) === "T003");
   await key("1");                                             // an answer that is not exported yet
-  check("an unexported answer", (await ann("T003")).q1_ophthalmic === "yes" && (await js(`document.getElementById("save").textContent`)).includes("not exported"));
+  check("an annotation not downloaded yet", (await ann("T003")).q1_ophthalmic === "yes" && (await js(`document.getElementById("save").textContent`)).includes("not downloaded"));
 
   // Lock / forget code
   await js(`document.getElementById("switchBtn").click()`); await sleep(300);
@@ -586,36 +659,52 @@ async function encrypted() {
 
 // ------------------------------------------------------------------ http with the site's own (real) encrypted data
 async function real() {
-  const code = readFileSync(resolve(codeArg), "utf8").trim();
-  const meta = await js(`fetch("data/meta.json",{cache:"no-cache"}).then(r=>r.json())`);
-  check("the site's data is encrypted (ophth-audit-enc-v1)", meta.format === "ophth-audit-enc-v1" && meta.cipher === "AES-256-GCM" && meta.kdf.iterations >= 600000, { format: meta.format, n: meta.n_cases });
-  check("access dialog shown", await until(`!document.getElementById("accessBox").hidden`));
-  await typeCode(code, true);
-  check("the access code opens the data", await until(`!document.getElementById("sessBox").hidden && document.getElementById("accessBox").hidden`, 15000));
-  await startSession("Smoke Test", "researcher", 1, true);
+  // the site's own data/, served over http like GitHub Pages: plaintext (manifest.js) or, when config.js says so,
+  // encrypted (meta.json); every case's image and audio clip must load
+  const enc = await js(`(window.AUDIT_CONFIG&&AUDIT_CONFIG.encrypted===false) ? false :
+    fetch("data/meta.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).catch(()=>null).then(m=>!!(m&&m.format==="ophth-audit-enc-v1"))`);
+  if (enc) {
+    if (!codeArg) { check("encrypted data needs the code file", false); return; }
+    check("access dialog shown", await until(`!document.getElementById("accessBox").hidden`));
+    await typeCode(readFileSync(resolve(codeArg), "utf8").trim(), true);
+    check("the access code opens the data", await until(`!document.getElementById("sessBox").hidden && document.getElementById("accessBox").hidden`, 15000));
+  } else {
+    check("the site's data is plaintext (config.js encrypted: false)", (await js(`AUDIT_CONFIG.encrypted===false && AUDIT_CONFIG.server===false`)) && (await until(`!document.getElementById("sessBox").hidden`)));
+  }
+  check("robots: noindex, nofollow", (await js(`document.querySelector('meta[name=robots]').content`)) === "noindex, nofollow");
+  await shot("r0_name_1366x768.png");
+  await startSession("Smoke Test", true);
   const n = await js(`AUDIT_APP.state.n`);
-  check("every case of meta.json is in the case list", n === meta.n_cases && n > 0, { n, meta: meta.n_cases });
+  check("the cases load (" + n + ")", n > 0 && (await js(`AUDIT_APP.state.mode`)) === (enc ? "encrypted" : "plain"), n);
   const ids = await js(`AUDIT_APP.ids()`), bad = [];
   let withAudio = 0;
+  const imgOk = enc ? `document.getElementById("img").src.startsWith("blob:") && ` : "";
   for (let k = 0; k < n; k++) {
-    const okI = await until(`AUDIT_APP.state.cur===${k} && document.getElementById("img").src.startsWith("blob:") && document.getElementById("img").complete && document.getElementById("img").naturalWidth>0`, 8000);
-    const okA = await until(`["ready","none"].includes(AUDIT_APP.state.audio) && (AUDIT_APP.state.audio==="none" || document.getElementById("audio").duration>0)`, 8000);
+    const okI = await until(`AUDIT_APP.state.cur===${k} && ${imgOk}document.getElementById("img").complete && document.getElementById("img").naturalWidth>0 && document.getElementById("imgMsg").hidden`, 10000);
+    const okA = await until(`["ready","none"].includes(AUDIT_APP.state.audio) && (AUDIT_APP.state.audio==="none" || (document.getElementById("audio").readyState>=1 && document.getElementById("audio").duration>0))`, 10000);
     if ((await js(`AUDIT_APP.state.audio`)) === "ready") withAudio++;
     if (!okI || !okA) bad.push(ids[k] + (okI ? "" : " image") + (okA ? "" : " audio"));
     if (k === 0) { await sleep(400); await shot("r1_first_1366x768.png"); }
     if (k < n - 1) await key("ArrowRight", { wait: 30 });
   }
-  check("every image and audio clip decrypts (" + n + " cases, " + withAudio + " with audio)", bad.length === 0, bad);
+  check("every image and audio clip loads (" + n + " cases, " + withAudio + " with audio)", bad.length === 0, bad);
   check("walked to the last case", (await js(`AUDIT_APP.state.cur`)) === n - 1);
-  check("only the cases around the current one stay decrypted", (await js(`AUDIT_APP.blobs()`)) <= 12, await js(`AUDIT_APP.blobs()`));
+  if (enc) check("only the cases around the current one stay decrypted", (await js(`AUDIT_APP.blobs()`)) <= 12, await js(`AUDIT_APP.blobs()`));
+  check("plain words only on the page", !TECH.test(await shownText()), ((await shownText()).match(TECH) || [])[0]);
   await js(`(()=>{const g=document.getElementById("goto");g.value="1";g.dispatchEvent(new KeyboardEvent("keydown",{key:"Enter",bubbles:true}))})()`);
   await until(`AUDIT_APP.state.cur===0 && document.getElementById("img").naturalWidth>0`);
   await sleep(400);
   await layoutChecks("1366x768 window");
-  await shot("r2_case1_1366x768.png");
+  await shot("r2_case1_1366x768_bright.png");
   await cdp("Emulation.setDeviceMetricsOverride", { width: 1366, height: 657, deviceScaleFactor: 1, mobile: false });
   await sleep(500);
   await layoutChecks("1366x657 page");
-  await shot("r3_case1_1366x657.png");
+  await shot("r3_case1_1366x657_bright.png");
+  await click("#theme");
+  await sleep(300);
+  await layoutChecks("1366x657 page, dark");
+  await shot("r4_case1_1366x657_dark.png");
+  await narrowChecks();
+  await click("#theme");
   await cdp("Emulation.clearDeviceMetricsOverride");
 }

@@ -1,6 +1,9 @@
 /* Rubric of the ophthalmic image–description audit (rubric-v1).
  * Question ids and option codes are what the exports contain and what the analysis reads:
  * do not change them without updating the export documentation and bumping "version".
+ * Page texts: question (the headline at the top), task (the sentence under it), welcome (the short introduction of the
+ *   welcome for someone new), in_short (the guidelines in short, in the welcome), intro (the first paragraph of How to),
+ *   notes (the guidelines in How to).
  * Fields per question: id, title (the full question), short (label in the answer panel), help,
  *   options [{code, label, key, help, issue, ask_note}], required, skip_if.
  * "issue": true marks an answer that reports a problem; a complete case with one is shown as Flagged.
@@ -10,6 +13,11 @@
  */
 window.AUDIT_GUIDELINES = {
   "version": "rubric-v1",
+
+  "question": "Does the description fit the image and the narration?",
+  "task": "Compare the **description** with the **image** and with what the expert said, then answer the **7 questions**.",
+  "welcome": "Thank you for helping us audit a dataset of **ophthalmic images paired with text descriptions**, built from expert teaching videos. For each case, please tell us whether the **description** fits the image and what the expert said. Most cases take 20–40 seconds, about **1 hour per 100 cases**.",
+  "in_short": "Judge the **description**, not the speaker; the **transcript** is the reference for what was said. When in doubt, choose the more likely answer and add a short note.",
 
   "intro": "Thank you for helping us audit **a dataset of ophthalmic images paired with text descriptions**, built from expert teaching videos. Each case shows **one image** taken from a video, the **description** that the dataset pairs with it, and the **narration**: what the expert said at that moment (an automatic transcript, plus the audio clip). **Judge the DESCRIPTION**: does it match the image, is it supported by the narration, is it clinically accurate? Use the **transcript as the reference** for what was said. Answer the 7 questions for each case; most cases take 20–40 seconds, so plan about **1 hour per 100 cases**. Your work is saved automatically, so you can stop and continue later. In question 7, **flag anything patient-identifying**: a face or eye-region photo, a name, ID/MRN, date of birth, or an exam/visit date.",
 

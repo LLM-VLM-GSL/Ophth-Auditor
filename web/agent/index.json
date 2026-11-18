@@ -1,0 +1,97 @@
+{
+  "name": "Ophthalmic image-description audit: agent entry",
+  "what": "Machine-readable entry to the static audit page. Human raters judge, for each case, one ophthalmic image, the text description paired with it, and the narration (transcript) it was derived from, answering 7 questions. An automated rater (an LLM through an API) can answer the same cases and produce the same export file. There is no server: fetch these files, answer locally, and send the export file to the study team. LLM ratings are a pilot comparison and are analysed separately from the clinicians' audit.",
+  "agent_spec_version": "agent-spec-v1",
+  "rubric_version": "rubric-v1",
+  "manifest_version": "v1-2026-11-18",
+  "n_cases": 100,
+  "site": "https://llm-vlm-gsl.github.io/Ophth-Auditor/",
+  "links": {
+    "rubric": "rubric.json",
+    "tasks": "tasks.jsonl",
+    "output_schema": "output_schema.json",
+    "instructions": "AGENT.md",
+    "page": "../index.html"
+  },
+  "sha256": {
+    "rubric.json": "a20487d4953b7f3c8f266d5c933ca476a90e2e0703cd372b5a9d35bd41abb7b9",
+    "tasks.jsonl": "0a08e0049a63b7f4843062ae4a1b383c9f6f3efb064c71d3e53f4441cacaf0d1",
+    "output_schema.json": "b1bdc6864a5d9eb02658a95bacbc922737cef0433e9b308dccaade43dcdf6d34"
+  },
+  "media": "Relative media paths in tasks.jsonl ('image', 'audio') are relative to the site root (the folder of index.html, one level above this file); 'image_url' / 'audio_url' are absolute.",
+  "export": {
+    "format": "JSON, UTF-8",
+    "file_name": "ophth_audit_<rater-slug>_<YYYYMMDD-HHMM>.json",
+    "file_name_time": "local time when the file was first written",
+    "rater_slug_rule": "lowercase the rater name, replace every run of characters outside [a-z0-9] with one '-', strip leading and trailing '-', keep at most 40 characters; empty gives 'rater'. Example: 'anthropic/claude-opus-5-5#2' -> 'anthropic-claude-opus-5-5-2'.",
+    "top_level_keys": [
+      "tool",
+      "tool_version",
+      "rubric_version",
+      "manifest_version",
+      "exported_at",
+      "rater",
+      "annotations",
+      "run (optional, automated raters)"
+    ],
+    "constants": {
+      "tool": "ophth-audit",
+      "tool_version": "1.0",
+      "rubric_version": "rubric-v1",
+      "manifest_version": "v1-2026-11-18"
+    },
+    "rater": {
+      "name": "for an LLM: '<provider>/<model>' (with '#<k>' for repeated runs of the same model)",
+      "role": "'llm' for any automated rater (humans: ophthalmologist, optometrist, resident_fellow, trained_grader, researcher, other)",
+      "years_experience": "null for an LLM"
+    },
+    "annotations": "object keyed by case id, one entry per case of tasks.jsonl in the same order; each entry has exactly the keys q1_ophthalmic, q2_modality, q3_crop, q4_image_text, q5_faithful, q6_clinical, q7_pii, note, annotated_at, time_spent_s. Unanswered = '' (time_spent_s 0).",
+    "annotated_at": "ISO-8601 with UTC offset, e.g. 2026-11-18T10:31:05-07:00",
+    "time_spent_s": "seconds spent on the case (for an LLM: wall time of the API call(s)), one decimal",
+    "skip_logic": "if q1_ophthalmic == 'no', then q2_modality, q3_crop, q4_image_text, q5_faithful, q6_clinical are 'na'; 'na' is never used otherwise; q7_pii is always answered.",
+    "note_rule": "when q7_pii == 'yes' the note must say what is identifying and where",
+    "run": "optional extra top-level object written by automated raters: provider, model, settings, prompt hash, cases sent, failures, and a statement that audio was not sent. The page and the analysis ignore it.",
+    "example": {
+      "tool": "ophth-audit",
+      "tool_version": "1.0",
+      "rubric_version": "rubric-v1",
+      "manifest_version": "v1-2026-11-18",
+      "exported_at": "2026-11-18T10:31:05-07:00",
+      "rater": {
+        "name": "anthropic/claude-opus-5-5",
+        "role": "llm",
+        "years_experience": null
+      },
+      "annotations": {
+        "A001": {
+          "q1_ophthalmic": "yes",
+          "q2_modality": "oct",
+          "q3_crop": "good",
+          "q4_image_text": "full",
+          "q5_faithful": "partial",
+          "q6_clinical": "correct",
+          "q7_pii": "no",
+          "note": "Foveal elevation visible; narration mentions the RPE scroll only.",
+          "annotated_at": "2026-11-18T10:30:58-07:00",
+          "time_spent_s": 6.4
+        }
+      },
+      "run": {
+        "provider": "anthropic",
+        "model": "claude-opus-5-5",
+        "audio_sent": false
+      }
+    }
+  },
+  "llm_rules": [
+    "Set rater.role = 'llm', rater.name = '<provider>/<model>' and rater.years_experience = null.",
+    "Do not send the export file anywhere public: return it to the study team.",
+    "Report in run.note that the audio clips were not given to the model (if they were not).",
+    "You are an automated rater. Your answers are kept separate from the clinicians' audit and compared with it.",
+    "You cannot hear the audio clip. The transcript is the narration: judge Q5 against it. If the transcript is missing, empty or too garbled to compare, answer Q5 = cant_judge.",
+    "Answer all 7 questions for every case with the option codes of the rubric. If q1_ophthalmic is \"no\", q2_modality to q6_clinical must be \"na\"; never use \"na\" otherwise.",
+    "Write a short note in English (at most about 40 words) with the observation that decided your least obvious answer. When q7_pii is \"yes\", the note must say what is identifying and where it is. Mention visible logos, watermarks, age or sex in the note (they are not patient-identifying).",
+    "Judge each case on its own. Do not use outside sources, and do not try to identify the source video, the presenter or the patient."
+  ],
+  "client": "agent/llm_annotate.py in the source repository implements all of this (Anthropic or any OpenAI-compatible endpoint)."
+}

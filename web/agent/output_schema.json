@@ -1,0 +1,491 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "output_schema.json",
+  "title": "Ophthalmic image-description audit: answers and export file",
+  "description": "Root = the export file. $defs/case_answer = one case's answer; $defs/annotation = one entry of 'annotations'.",
+  "$ref": "#/$defs/export",
+  "$defs": {
+    "case_answer": {
+      "title": "One case's answer (what a model returns for one case)",
+      "type": "object",
+      "properties": {
+        "q1_ophthalmic": {
+          "type": "string",
+          "enum": [
+            "yes",
+            "no",
+            "unsure"
+          ]
+        },
+        "q2_modality": {
+          "type": "string",
+          "enum": [
+            "oct",
+            "cfp",
+            "uwf",
+            "angio",
+            "other",
+            "multi",
+            "unsure",
+            "na"
+          ]
+        },
+        "q3_crop": {
+          "type": "string",
+          "enum": [
+            "good",
+            "partial",
+            "bad",
+            "na"
+          ]
+        },
+        "q4_image_text": {
+          "type": "string",
+          "enum": [
+            "full",
+            "partial",
+            "none",
+            "na"
+          ]
+        },
+        "q5_faithful": {
+          "type": "string",
+          "enum": [
+            "full",
+            "partial",
+            "unsupported",
+            "cant_judge",
+            "na"
+          ]
+        },
+        "q6_clinical": {
+          "type": "string",
+          "enum": [
+            "correct",
+            "minor",
+            "major",
+            "cant_judge",
+            "na"
+          ]
+        },
+        "q7_pii": {
+          "type": "string",
+          "enum": [
+            "no",
+            "yes"
+          ]
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "q1_ophthalmic",
+        "q2_modality",
+        "q3_crop",
+        "q4_image_text",
+        "q5_faithful",
+        "q6_clinical",
+        "q7_pii",
+        "note"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "q1_ophthalmic": {
+                "enum": [
+                  "no"
+                ]
+              }
+            },
+            "required": [
+              "q1_ophthalmic"
+            ]
+          },
+          "then": {
+            "properties": {
+              "q2_modality": {
+                "const": "na"
+              },
+              "q3_crop": {
+                "const": "na"
+              },
+              "q4_image_text": {
+                "const": "na"
+              },
+              "q5_faithful": {
+                "const": "na"
+              },
+              "q6_clinical": {
+                "const": "na"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "q2_modality": {
+                "enum": [
+                  "oct",
+                  "cfp",
+                  "uwf",
+                  "angio",
+                  "other",
+                  "multi",
+                  "unsure"
+                ]
+              },
+              "q3_crop": {
+                "enum": [
+                  "good",
+                  "partial",
+                  "bad"
+                ]
+              },
+              "q4_image_text": {
+                "enum": [
+                  "full",
+                  "partial",
+                  "none"
+                ]
+              },
+              "q5_faithful": {
+                "enum": [
+                  "full",
+                  "partial",
+                  "unsupported",
+                  "cant_judge"
+                ]
+              },
+              "q6_clinical": {
+                "enum": [
+                  "correct",
+                  "minor",
+                  "major",
+                  "cant_judge"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "q7_pii": {
+                "enum": [
+                  "yes"
+                ]
+              }
+            },
+            "required": [
+              "q7_pii"
+            ]
+          },
+          "then": {
+            "properties": {
+              "note": {
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "annotation": {
+      "title": "One annotation in the export file ('' = unanswered)",
+      "type": "object",
+      "properties": {
+        "q1_ophthalmic": {
+          "type": "string",
+          "enum": [
+            "",
+            "yes",
+            "no",
+            "unsure"
+          ]
+        },
+        "q2_modality": {
+          "type": "string",
+          "enum": [
+            "",
+            "oct",
+            "cfp",
+            "uwf",
+            "angio",
+            "other",
+            "multi",
+            "unsure",
+            "na"
+          ]
+        },
+        "q3_crop": {
+          "type": "string",
+          "enum": [
+            "",
+            "good",
+            "partial",
+            "bad",
+            "na"
+          ]
+        },
+        "q4_image_text": {
+          "type": "string",
+          "enum": [
+            "",
+            "full",
+            "partial",
+            "none",
+            "na"
+          ]
+        },
+        "q5_faithful": {
+          "type": "string",
+          "enum": [
+            "",
+            "full",
+            "partial",
+            "unsupported",
+            "cant_judge",
+            "na"
+          ]
+        },
+        "q6_clinical": {
+          "type": "string",
+          "enum": [
+            "",
+            "correct",
+            "minor",
+            "major",
+            "cant_judge",
+            "na"
+          ]
+        },
+        "q7_pii": {
+          "type": "string",
+          "enum": [
+            "",
+            "no",
+            "yes"
+          ]
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "annotated_at": {
+          "type": "string",
+          "description": "ISO-8601 with UTC offset, or '' when unanswered"
+        },
+        "time_spent_s": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "q1_ophthalmic",
+        "q2_modality",
+        "q3_crop",
+        "q4_image_text",
+        "q5_faithful",
+        "q6_clinical",
+        "q7_pii",
+        "note",
+        "annotated_at",
+        "time_spent_s"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "q1_ophthalmic": {
+                "enum": [
+                  "no"
+                ]
+              }
+            },
+            "required": [
+              "q1_ophthalmic"
+            ]
+          },
+          "then": {
+            "properties": {
+              "q2_modality": {
+                "const": "na"
+              },
+              "q3_crop": {
+                "const": "na"
+              },
+              "q4_image_text": {
+                "const": "na"
+              },
+              "q5_faithful": {
+                "const": "na"
+              },
+              "q6_clinical": {
+                "const": "na"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "q2_modality": {
+                "enum": [
+                  "",
+                  "oct",
+                  "cfp",
+                  "uwf",
+                  "angio",
+                  "other",
+                  "multi",
+                  "unsure"
+                ]
+              },
+              "q3_crop": {
+                "enum": [
+                  "",
+                  "good",
+                  "partial",
+                  "bad"
+                ]
+              },
+              "q4_image_text": {
+                "enum": [
+                  "",
+                  "full",
+                  "partial",
+                  "none"
+                ]
+              },
+              "q5_faithful": {
+                "enum": [
+                  "",
+                  "full",
+                  "partial",
+                  "unsupported",
+                  "cant_judge"
+                ]
+              },
+              "q6_clinical": {
+                "enum": [
+                  "",
+                  "correct",
+                  "minor",
+                  "major",
+                  "cant_judge"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "export": {
+      "title": "The export file ophth_audit_<rater-slug>_<YYYYMMDD-HHMM>.json",
+      "type": "object",
+      "properties": {
+        "tool": {
+          "const": "ophth-audit"
+        },
+        "tool_version": {
+          "const": "1.0"
+        },
+        "rubric_version": {
+          "const": "rubric-v1"
+        },
+        "manifest_version": {
+          "type": "string",
+          "description": "the manifest_version of the case list (v1-2026-11-18)"
+        },
+        "exported_at": {
+          "type": "string",
+          "description": "ISO-8601 with UTC offset"
+        },
+        "rater": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "role": {
+              "enum": [
+                "ophthalmologist",
+                "optometrist",
+                "resident_fellow",
+                "trained_grader",
+                "researcher",
+                "other",
+                "llm",
+                ""
+              ]
+            },
+            "years_experience": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "role",
+            "years_experience"
+          ],
+          "additionalProperties": false
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/annotation"
+          }
+        },
+        "run": {
+          "type": "object",
+          "description": "optional, automated raters only: run metadata (provider, model, prompt hash, settings, failures); readers ignore it"
+        }
+      },
+      "required": [
+        "tool",
+        "tool_version",
+        "rubric_version",
+        "manifest_version",
+        "exported_at",
+        "rater",
+        "annotations"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "rater": {
+                "properties": {
+                  "role": {
+                    "const": "llm"
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "rater": {
+                "properties": {
+                  "name": {
+                    "pattern": "^[^/\\s]+/[^\\s]+$"
+                  },
+                  "years_experience": {
+                    "const": null
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

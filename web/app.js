@@ -14,7 +14,10 @@
  *   http(s), when api/ping answers (serve.py), answers are also PUT, debounced, to api/annotations/<rater-slug>;
  *   false: the page never calls api/* (static hosting).
  * - Answers are autosaved in localStorage under "ophth-audit:ann:<manifest_version>:<rater-slug>" and leave the
- *   browser as files the rater downloads (Export JSON / CSV / Excel).
+ *   browser as files the reviewer downloads (Download annotations: JSON, CSV or Excel).
+ * Reviewer-facing behaviour follows the lab's Retify page (its AGENTS.md, section 5): the eye at the top left is the
+ * bright / dark switch, the task is the headline, How to stands out, "annotations" and "download" in plain words,
+ * a short welcome for someone new, the image as a small canvas, the queue below the case on narrow screens.
  * - Nothing is requested from other origins: no CDN, no fonts, no analytics.
  * Interaction patterns, the image viewer and the CSV reader are adapted from an earlier MIT-licensed annotation
  * tool by the same authors.
@@ -29,12 +32,10 @@
   // Question ids and export columns, in SPEC order (guidelines.js is checked against this at start).
   const QIDS = ["q1_ophthalmic", "q2_modality", "q3_crop", "q4_image_text", "q5_faithful", "q6_clinical", "q7_pii"];
   const COLS = ["no", "case_id", ...QIDS, "note", "annotated_at", "time_spent_s"];
-  const ROLES = [["ophthalmologist", "Ophthalmologist"], ["optometrist", "Optometrist"], ["resident_fellow", "Resident or fellow"],
-    ["trained_grader", "Trained grader"], ["researcher", "Researcher"], ["other", "Other"]];
   const LS = "ophth-audit:";              // prefix of every localStorage key of this page
   const IDLE_MS = 3 * 60 * 1000;          // no key, mouse or wheel for this long (and no audio playing): the clock stops
   const NOTE_MAX = 2000;
-  const STATE_TEXT = { todo: "To do", partial: "Started", done: "Complete", flag: "Complete · flagged" };
+  const STATE_TEXT = { todo: "To do", partial: "Started", done: "Done", flag: "Done · flagged" };
 
   // ---------------------------------------------------------------- small helpers
   // Rater slug (SPEC; identical in serve.py and tools/analyze_audit.py): lowercase the full name, replace every run
@@ -304,18 +305,20 @@
     const s = $("save");
     const set = (t, cls, title) => { s.textContent = t; s.className = "save" + (cls ? " " + cls : ""); s.title = title || t; };
     if (!session) return set(M ? "Not started" : "Loading…", "warn");
-    if (!localOk) return set("NOT saved in this browser: please click Export JSON now", "err",
-      "This browser refused to store the answers (private window, or storage full). Export JSON regularly.");
+    if (!localOk) return set("Not saved — download your annotations before closing", "err",
+      "This browser refused to keep the annotations (a private window, or the storage is full). Download your annotations often.");
     const t = new Date(savedAt || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-    if (server.on) {
-      if (server.fails) return set("Saved in this browser " + t + " · audit server not reachable, retrying", "warn",
-        "The answers are safe in this browser. Is serve.py still running? Export JSON before closing to be sure.");
-      if (server.dirty || server.busy) return set("Saved in this browser " + t + " · sending to the audit server…");
-      return set("Saved in this browser and on the audit server " + t);
+    if (server.on) {                                // serve.py of the offline package: a copy in its results folder too
+      if (server.fails) return set("Saved in this browser · " + t + " · not yet in the results folder, retrying", "warn",
+        "The annotations are safe in this browser. Is the program window still open? Download your annotations before closing to be sure.");
+      if (server.dirty || server.busy) return set("Saved in this browser · " + t + " · saving to the results folder…");
+      return set("Saved in this browser and in the results folder · " + t);
     }
-    if (unexported()) return set("Saved in this browser " + t + " · not exported yet", "",
-      "Saved automatically in this browser. Click Export JSON at the end of each sitting and send the file to the study team.");
-    return set("Saved in this browser " + t + (record.exported_at ? " · exported " + fmtWhen(record.exported_at) : ""));
+    if (unexported()) return set("Saved in this browser · " + t + " · not downloaded yet", "",
+      "Saved automatically in this browser. At the end of each sitting, click Download annotations and send us the JSON file.");
+    const d = tms(record.exported_at) ? new Date(tms(record.exported_at)) : null;
+    const when = !d ? "" : d.toDateString() === new Date().toDateString() ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : fmtWhen(record.exported_at);
+    return set("Saved in this browser · " + t + (when ? " · downloaded " + when : ""));
   }
   async function ping() {
     if (!SERVER_API || !/^https?:$/.test(location.protocol)) return false;
@@ -426,7 +429,7 @@
   function doExport(kind) {
     if (!session) return;
     flushNote(); saveTime();
-    if (kind === "xlsx" && !window.XLSX) return toast("Excel export is not available (vendor/xlsx.full.min.js is missing). Please use Export JSON.", true);
+    if (kind === "xlsx" && !window.XLSX) return toast("The Excel file cannot be made here (vendor/xlsx.full.min.js is missing). Please download the JSON file.", true);
     const o = exportObject(), name = "ophth_audit_" + slug + "_" + fileStamp(new Date()) + "." + kind;
     let blob;
     try {
@@ -434,13 +437,24 @@
       else if (kind === "csv") blob = new Blob([csvText(o)], { type: "text/csv;charset=utf-8" });
       else blob = new Blob([xlsxBytes(o)], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
     } catch (e) {
-      return toast("The export failed: " + e.message, true);
+      return toast("The download failed: " + e.message, true);
     }
     download(blob, name);
     record.exported_rev = record.rev || 0;
     record.exported_at = o.exported_at;
     persist(false);
-    toast("Downloaded " + name + " · " + countDone() + " of " + N + " cases complete", false, 4500);
+    $("dlBox").hidden = true;
+    toast("Downloaded " + name + " · " + countDone() + " of " + N + " cases annotated", false, 4500);
+  }
+  function openDownload() {                         // one control for the three files, as in Retify
+    if (!session) return;
+    flushNote(); saveTime();
+    const done = countDone(), left = N - done;
+    $("dlSum").textContent = done + " of " + N + " cases annotated" +
+      (left ? " (" + left + " still to do; you can download now and again later)." : ". Thank you!") +
+      " Please send us the JSON file" + (server.on ? "; a copy is also kept in the results folder." : ".") +
+      " Excel and CSV are copies for you.";
+    openBox("dlBox", "dlJson");
   }
 
   // ---------------------------------------------------------------- loading a file exported earlier
@@ -501,19 +515,19 @@
         // prefix is this page's ("ophth") or the one of files exported by an earlier version of the offline package
         const m = name.match(/^[a-z0-9]+_audit_([a-z0-9-]+)_\d{8}-\d{4}/i);
         if (m) who = m[1].toLowerCase();
-      } else throw new Error("please choose a .json, .csv or .xlsx file exported by this page");
+      } else throw new Error("please choose a .json, .csv or .xlsx file downloaded from this page");
     } catch (e) {
       return ask("Could not load the file", [name + ": " + e.message], [{ label: "Close", value: 0, primary: true, cancel: true }]);
     }
     if (who && who !== slug) {
-      const ok = await ask("Annotations of another rater?", ["This file was exported under the name “" + who + "”, but you are working as " +
-        record.rater.name + " (“" + slug + "”).", "Merge its answers into your annotations anyway?"],
+      const ok = await ask("Annotations of another reviewer?", ["This file was downloaded under the name “" + who + "”, but you are annotating as " +
+        record.rater.name + ".", "Add its annotations to yours anyway?"],
       [{ label: "Cancel", value: false, cancel: true }, { label: "Merge anyway", value: true }]);
       if (!ok) return;
     }
     if (mv && mv !== M.manifest_version) {
-      const ok = await ask("Another version of the case list", ["This file was saved for the case list “" + mv + "”; this page shows “" +
-        M.manifest_version + "”. Only cases with the same ID are merged."], [{ label: "Cancel", value: false, cancel: true }, { label: "Merge", value: true, primary: true }]);
+      const ok = await ask("Another version of the cases", ["This file was saved for another version of the cases (“" + mv + "”; this page shows “" +
+        M.manifest_version + "”). Only cases with the same ID are loaded."], [{ label: "Cancel", value: false, cancel: true }, { label: "Load", value: true, primary: true }]);
       if (!ok) return;
     }
     flushNote(); saveTime();
@@ -522,8 +536,8 @@
     renderCase();
     const lines = [plural(res.taken, "case") + " taken from " + name + " (newer than this browser's or new).",
       plural(res.kept, "case") + " kept as they were in this browser (the same or newer)."];
-    if (res.unknown) lines.push(plural(res.unknown, "row") + " skipped: case IDs that are not in this case list.");
-    if (res.invalid) lines.push(plural(res.invalid, "answer") + " ignored: values that are not answer codes of this rubric.");
+    if (res.unknown) lines.push(plural(res.unknown, "row") + " skipped: not cases of this audit.");
+    if (res.invalid) lines.push(plural(res.invalid, "answer") + " ignored: not answers of these questions.");
     await ask("Annotations loaded", lines, [{ label: "OK", value: 0, primary: true, cancel: true }]);
   }
 
@@ -555,7 +569,7 @@
       showBox("askBox", focus || cancelBtn || R.lastChild);   // no primary action: the safe button has the focus
     });
   }
-  const MODALS = ["askBox", "accessBox", "sessBox", "welcomeBox", "guideBox", "keysBox"];
+  const MODALS = ["askBox", "accessBox", "sessBox", "welcomeBox", "helpBox", "dlBox"];
   function topModal() { for (const id of MODALS) if (!$(id).hidden) return $(id); return null; }
   function showBox(id, focusEl) {                   // open a dialog at its top, with the keyboard focus on its button
     $(id).hidden = false;
@@ -570,64 +584,59 @@
     m.hidden = true;
     if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
   }
-  for (const id of ["guideBox", "keysBox"]) $(id).addEventListener("click", (e) => { if (e.target === $(id)) closeBox($(id)); });
+  for (const id of ["helpBox", "dlBox"]) $(id).addEventListener("click", (e) => { if (e.target === $(id)) closeBox($(id)); });
 
   // ---------------------------------------------------------------- the session: who is rating
   const cleanName = (s) => String(s || "").replace(/\s+/g, " ").trim();
-  const roleLabel = (v) => (ROLES.find((r) => r[0] === v) || [v, v])[1];
-  let sessResolve = null, sessAuto = { sRole: "", sYears: "" };
-  function savedSessions() {
+  // Words of a name, for finding a session as Retify does: case, accents and punctuation do not matter.
+  const words = (s) => String(s || "").normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+  let sessResolve = null;
+  function savedSessions() {                        // the names that have annotations saved in this browser, newest first
     const pre = LS + "ann:" + M.manifest_version + ":";
     return lsKeys().filter((k) => k && k.startsWith(pre)).map((k) => ({ slug: k.slice(pre.length), rec: lsJson(k) }))
       .filter((x) => x.rec && x.rec.rater && x.rec.rater.name).sort((a, b) => tms(b.rec.saved_at) - tms(a.rec.saved_at));
   }
-  function renderSaved() {
-    const S = $("sSaved"), list = savedSessions().slice(0, 8);
-    S.replaceChildren();
-    S.hidden = !list.length;
-    if (!list.length) return;
-    S.append(el("span", null, "Saved in this browser:"));
-    for (const x of list) {
-      const b = el("button", null, x.rec.rater.name);
-      b.type = "button";
-      b.title = countCompleteIn(x.rec.annotations) + " of " + N + " cases complete";
-      b.onclick = () => { $("sName").value = x.rec.rater.name; updFound(); $("sName").focus(); };
-      S.append(b);
-    }
+  function choice(label, sub, onclick, on) {
+    const b = el("button", "sess" + (on ? " on" : ""));
+    b.type = "button";
+    b.append(el("span", null, label), el("small", null, sub));
+    b.onclick = onclick;
+    return b;
   }
+  // As the name is typed: the session of exactly this name (continue), else the sessions in this browser sharing a word
+  // with it ("Is one of them yours?"), else a new session, which needs the full name, first and last.
   function updFound() {
-    const name = cleanName($("sName").value), F = $("sFound");
-    const rec = name ? peekLocal(slugify(name)) : null;
-    // role and years come from the saved session, unless the rater has changed them in this dialog
-    const fill = (id, v) => { const f = $(id); if (f.value === sessAuto[id]) { f.value = v; sessAuto[id] = f.value; } };
-    fill("sRole", rec && rec.rater && rec.rater.role ? rec.rater.role : "");
-    fill("sYears", rec && rec.rater && rec.rater.years_experience != null ? String(rec.rater.years_experience) : "");
+    const name = cleanName($("sName").value), R = $("sRes");
+    R.replaceChildren();
     $("sErr").hidden = true;
-    if (!name) { F.hidden = true; $("sGo").textContent = "Start"; return; }
-    F.hidden = false;
+    if (!name) { $("sGo").textContent = "Start"; return; }
+    const rec = peekLocal(slugify(name));
+    const annotated = (r) => countCompleteIn(r.annotations) + " of " + N + " annotated";
     if (rec) {
-      F.className = "found";
-      F.textContent = "Welcome back. Saved work found for this name: " + countCompleteIn(rec.annotations) + " of " + N +
-        " cases complete" + (rec.saved_at ? ", last saved " + fmtWhen(rec.saved_at) : "") + ".";
+      R.append(el("p", "found", "Welcome back. Your session was found in this browser: " + annotated(rec) +
+        (rec.saved_at ? ", last saved " + fmtWhen(rec.saved_at) : "") + "."));
       $("sGo").textContent = "Continue";
-    } else {
-      F.className = "found new";
-      F.textContent = "No saved work for this name in this browser: a new session starts." +
-        (savedSessions().length ? " If you rated before, type your name exactly as before, or pick it below." : "");
-      $("sGo").textContent = "Start";
+      return;
     }
+    const w = new Set(words(name));
+    const matches = savedSessions().filter((x) => words(x.rec.rater.name).some((v) => w.has(v))).slice(0, 6);
+    if (matches.length) {
+      R.append(el("p", null, "We found these sessions for “" + name + "” in this browser. Is one of them yours?"));
+      for (const x of matches) R.append(choice(x.rec.rater.name, annotated(x.rec), () => { $("sName").value = x.rec.rater.name; updFound(); $("sName").focus(); }));
+      R.append(el("p", null, "If not, please enter your full name, first and last, to start a new session."));
+    } else {
+      R.append(el("p", null, "No session was found for “" + name + "” in this browser. To start a new session, please enter your full name, first and last."));
+    }
+    $("sGo").textContent = "Start a new session";
   }
   function openSession(cancelable) {
     return new Promise((resolve) => {
       sessResolve = resolve;
       const last = lsJson(LS + "last");
       $("sName").value = !cancelable && last && typeof last.name === "string" ? last.name : "";
-      $("sRole").value = ""; $("sYears").value = "";
-      sessAuto = { sRole: "", sYears: "" };
       $("sCancel").hidden = !cancelable;
       $("sLock").hidden = !enc.on;
       $("sErr").hidden = true;
-      renderSaved();
       updFound();
       $("sessBox").hidden = false;
       setTimeout(() => { $("sName").focus(); $("sName").select(); }, 0);
@@ -644,10 +653,11 @@
   $("sCancel").onclick = () => closeSession(null);
   $("sessForm").addEventListener("submit", (e) => {
     e.preventDefault();
-    const name = cleanName($("sName").value);     // like Retify: the rater's name is the only identity asked for
-    const bad = (msg, f) => { $("sErr").textContent = msg; $("sErr").hidden = false; f.focus(); };
-    if (name.length < 2) return bad("Please enter your name.", $("sName"));
-    if (!/[a-z0-9]/i.test(name)) return bad("Please type your name in Latin letters (a–z), for example as in your e-mail address.", $("sName"));
+    const name = cleanName($("sName").value);     // as in Retify: the reviewer's name is the only identity asked for
+    const bad = (msg) => { $("sErr").textContent = msg; $("sErr").hidden = false; $("sName").focus(); };
+    if (name.length < 2) return bad("Please enter your name.");
+    if (!/[a-z0-9]/i.test(name)) return bad("Please type your name in Latin letters (a–z), for example as in your e-mail address.");
+    if (!peekLocal(slugify(name)) && words(name).length < 2) return bad("Please enter your full name, first and last (e.g., Tina Vascullensky).");
     closeSession({ name, role: "", years_experience: null });
   });
 
@@ -676,9 +686,11 @@
     const k = nextIncomplete(0), last = byId.get(record.last_case);
     cur = k >= 0 ? k : last != null ? last : 0;
     active = firstOpen(ann[cases[cur].id]);
+    allDoneShown = false;
     renderCase();
     await welcome();
     lastTick = Date.now();
+    if (k < 0) allDone();                           // everything annotated already: say so, as Retify does
   }
   async function fromServer() {
     let got = null;
@@ -690,17 +702,17 @@
     const theirs = got.saved_at || got.exported_at || "";
     if (tms(theirs) > tms(record.saved_at)) {
       const other = got.manifest_version && got.manifest_version !== M.manifest_version;
-      const ok = await ask("Continue from the audit server copy?", [
-        "The audit server on this computer has a copy of your work that is newer than the copy in this browser.",
-        "Server copy: " + countCompleteIn(got.annotations) + " of " + N + " cases complete, saved " + fmtWhen(theirs) + ". This browser: " +
-          countDone() + " complete" + (record.saved_at ? ", saved " + fmtWhen(record.saved_at) : "") + ".",
-        "Loading it keeps, for each case, the more recent answer." + (other ? " (It was saved for case list “" + got.manifest_version + "”.)" : "")],
-      [{ label: "Keep this browser's copy", value: false, cancel: true }, { label: "Load the server copy", value: true, primary: true }]);
+      const ok = await ask("Continue from the copy in the results folder?", [
+        "The results folder on this computer has a copy of your work that is newer than the copy in this browser.",
+        "That copy: " + countCompleteIn(got.annotations) + " of " + N + " cases annotated, saved " + fmtWhen(theirs) + ". This browser: " +
+          countDone() + " annotated" + (record.saved_at ? ", saved " + fmtWhen(record.saved_at) : "") + ".",
+        "Loading it keeps, for each case, the newer annotation." + (other ? " (It was saved for another version of the cases, “" + got.manifest_version + "”.)" : "")],
+      [{ label: "Keep this browser's copy", value: false, cancel: true }, { label: "Load that copy", value: true, primary: true }]);
       if (!ok) return;
     }
     // (an older server copy is merged quietly: it only adds cases that are newer there, e.g. from another browser)
     const res = mergeIn(got.annotations);
-    if (res.taken) { record.rev = (record.rev || 0) + 1; record.changed_at = isoNow(); toast(plural(res.taken, "case") + " loaded from the audit server"); }
+    if (res.taken) { record.rev = (record.rev || 0) + 1; record.changed_at = isoNow(); toast(plural(res.taken, "case") + " loaded from the results folder"); }
   }
   async function fromOtherVersion() {
     const pre = LS + "ann:", suf = ":" + slug;
@@ -710,21 +722,23 @@
       .sort((a, b) => tms(b.rec.saved_at) - tms(a.rec.saved_at));
     if (!found.length) return;
     const x = found[0], n = Object.keys(x.rec.annotations).filter((id) => byId.has(id) && hasContent(x.rec.annotations[id])).length;
-    const ok = await ask("Import your earlier answers?", ["This browser has answers saved under your name for another version of the case list (“" +
+    const ok = await ask("Load your earlier annotations?", ["This browser has annotations saved under your name for another version of the cases (“" +
       x.mv + "”): " + plural(n, "case") + " with the same ID as in this version (“" + M.manifest_version + "”).",
-    "Import them? Please check those cases again when you reach them."],
-    [{ label: "Start without them", value: false, cancel: true }, { label: "Import", value: true, primary: true }]);
+    "Load them? Please check those cases again when you reach them."],
+    [{ label: "Start without them", value: false, cancel: true }, { label: "Load", value: true, primary: true }]);
     if (!ok) return;
     const res = mergeIn(x.rec.annotations);
     if (res.taken) { record.rev = (record.rev || 0) + 1; record.changed_at = isoNow(); }
-    toast(plural(res.taken, "case") + " imported");
+    toast(plural(res.taken, "case") + " loaded");
   }
+  // The welcome, for someone new (Retify): once the session is known, when it has no annotations yet (a new reviewer,
+  // or one who never annotated), once per name in this browser. Help otherwise only from How to.
   function welcome() {
     const k = LS + "welcomed:" + slug;
-    if (lsGet(k) === "1" || countDone() > 0) return Promise.resolve();
-    $("wStore").textContent = server.on
-      ? "Your answers are saved automatically in this browser and on this computer's audit server (serve.py). When you finish, or at the end of each sitting, click Export JSON and send the downloaded file to the study team."
-      : "Your answers are saved automatically in this browser, on this computer. To continue later, open this page again in the same browser and type the same name. At the end of each sitting, click Export JSON and send the downloaded file to the study team.";
+    if (lsGet(k) === "1" || cases.some((c) => hasContent(ann[c.id]))) return Promise.resolve();
+    rich($("wStore"), server.on
+      ? "Your annotations are saved automatically in this browser and in the results folder on this computer. At the end of each sitting, click **Download annotations** and send us the JSON file."
+      : "Your annotations are saved automatically in this browser. To continue later, open this page again in the same browser and type the same name. At the end of each sitting, click **Download annotations** and send us the JSON file.");
     showBox("welcomeBox", $("wOk"));
     return new Promise((done) => {
       $("wOk").onclick = () => {
@@ -741,9 +755,9 @@
     $("who").hidden = !r;
     if (!r) return;
     $("whoName").textContent = r.name;
-    $("who").title = "Rater: " + r.name + " · file names use “" + slug + "”";
+    $("who").title = "Reviewer: " + r.name;
   }
-  function enableButtons(on) { for (const id of ["loadBtn", "expJson", "expCsv", "expXlsx", "prevBtn", "nextBtn", "todoBtn"]) $(id).disabled = !on; }
+  function enableButtons(on) { for (const id of ["loadBtn", "dlBtn", "prevBtn", "nextBtn", "todoBtn"]) $(id).disabled = !on; }
   $("switchBtn").onclick = async () => { const r = await openSession(true); if (r) await startSession(r); };
 
   // ---------------------------------------------------------------- the questions
@@ -869,16 +883,16 @@
     }
     const k = nextIncomplete(cur + 1);
     if (k < 0) return allDone();
-    toast("Case " + (cur + 1) + " complete", false, 1300);
+    toast("Case " + (cur + 1) + " annotated", false, 1300);
     go(k);
   }
   async function allDone() {
     if (allDoneShown) return;
     allDoneShown = true;
-    const v = await ask("All cases are complete", ["Thank you! All " + N + " cases are answered.",
-      server.on ? "Your answers are saved on this computer's audit server. Please also click Export JSON and send the file to the study team."
-        : "Please click Export JSON and send the downloaded file to the study team."],
-    [{ label: "Close", value: false, cancel: true }, { label: "Export JSON", value: true, primary: true }]);
+    const v = await ask("All cases are annotated — thank you!", [
+      "Please download your annotations and send the JSON file back to us." + (server.on ? " A copy is also in the results folder." : ""),
+      "You can still click any case on the left to look at it again or change it."],
+    [{ label: "Close", value: false, cancel: true }, { label: "Download annotations", value: true, primary: true }]);
     if (v) doExport("json");
   }
 
@@ -917,7 +931,7 @@
   function renderCase() {
     if (!session) return;
     const c = cases[cur], a = ann[c.id];
-    $("caseTitle").textContent = "Case " + (cur + 1) + " of " + N;
+    $("caseTitle").textContent = "Case " + (cur + 1) + " / " + N;
     $("caseId").textContent = c.id;
     if (shown !== c.id) {                           // a new case: image, texts, audio
       shown = c.id;
@@ -961,7 +975,7 @@
       L.append(b);
       n++;
     });
-    if (!n) L.append(el("div", "none", filt === "flag" ? "No flagged cases." : filt === "done" ? "No complete cases yet." : "Nothing left to do."));
+    if (!n) L.append(el("div", "none", filt === "flag" ? "No flagged cases." : filt === "done" ? "No cases done yet." : "Nothing left to do."));
     const x = L.querySelector(".cur");
     if (x) {
       const rb = x.getBoundingClientRect(), lb = L.getBoundingClientRect();
@@ -1215,7 +1229,7 @@
     putKeepalive();
     // no audit server (or it fails): warn when there are answers that were never exported
     if (unexported() && (!server.on || server.fails > 0) && !leaving) {
-      const msg = "Some answers were not exported yet. They stay saved in this browser.";
+      const msg = "Some annotations were not downloaded yet. They stay saved in this browser.";
       e.preventDefault();
       e.returnValue = msg;
       return msg;
@@ -1233,7 +1247,7 @@
     const more = Object.keys(ann).some((id) => hasContent(ann[id]) && (!theirs[id] || tms(ann[id].annotated_at) > tms(theirs[id].annotated_at)));
     if (res.taken) { record.rev = Math.max(record.rev || 0, other.rev || 0) + 1; renderCase(); }
     if (res.taken || more) persist();
-    banner("This page is open in another tab or window too. Answers are merged, but please work in one tab only.");
+    banner("This page is open in another tab or window too. Annotations are merged, but please work in one tab only.");
   });
 
   // ---------------------------------------------------------------- keyboard
@@ -1262,7 +1276,7 @@
     if (m) { if (e.key === "Escape") { e.preventDefault(); closeBox(m); } return; }
     if (!$("viewer").hidden) {
       const k = e.key.toLowerCase();
-      if (k === "escape" || k === "f") closeViewer();
+      if (k === "escape" || k === "f" || k === "enter") closeViewer();
       else if (k === "+" || k === "=") vview.zoom(1.25);
       else if (k === "-" || k === "_") vview.zoom(0.8);
       else if (k === "0" || k === "r") vview.reset();
@@ -1280,7 +1294,8 @@
       case "ArrowLeft": go(cur - 1); break;
       case "ArrowRight": go(cur + 1); break;
       case " ": if (!e.repeat) togglePlay(); break;
-      case "?": openBox("keysBox", "kOk"); break;
+      case "?": openHelp(); break;
+      case "Enter": if (tag === "BUTTON") done = false; else openViewer(); break;   // a focused button keeps its Enter
       case "+": case "=": view.zoom(1.25); break;
       case "-": case "_": view.zoom(0.8); break;
       case "0": view.reset(); break;
@@ -1292,7 +1307,7 @@
           case "e": $("note").focus(); break;
           case "f": openViewer(); break;
           case "r": view.reset(); break;
-          case "g": openBox("guideBox", "gOk"); break;
+          case "g": openHelp(); break;
           case "escape": break;
           default: {
             const dm = /^Digit([1-9])$/.exec(e.code || "");
@@ -1305,7 +1320,7 @@
   function nextTodo() {
     if (!session) return;
     const k = nextIncomplete(cur + 1);
-    if (k < 0) return toast("All cases are complete");
+    if (k < 0) return toast("All cases are annotated");
     if (k === cur) return toast("This is the only case still to do");
     go(k);
   }
@@ -1314,19 +1329,25 @@
   $("prevBtn").onclick = () => go(cur - 1);
   $("nextBtn").onclick = () => go(cur + 1);
   $("todoBtn").onclick = nextTodo;
-  $("expJson").onclick = () => doExport("json");
-  $("expCsv").onclick = () => doExport("csv");
-  $("expXlsx").onclick = () => doExport("xlsx");
+  $("dlBtn").onclick = openDownload;
+  $("dlJson").onclick = () => doExport("json");
+  $("dlCsv").onclick = () => doExport("csv");
+  $("dlXlsx").onclick = () => doExport("xlsx");
+  $("dlClose").onclick = () => closeBox($("dlBox"));
   $("loadBtn").onclick = () => { if (session) $("loadFile").click(); };
   $("loadFile").addEventListener("change", (e) => {
     const f = e.target.files && e.target.files[0];
     e.target.value = "";
     if (f && session) loadFile(f);
   });
-  $("guideBtn").onclick = () => openBox("guideBox", "gOk");
-  $("keysBtn").onclick = () => openBox("keysBox", "kOk");
-  $("gOk").onclick = () => closeBox($("guideBox"));
-  $("kOk").onclick = () => closeBox($("keysBox"));
+  function openHelp() {
+    rich($("gStore"), server.on
+      ? "Your annotations are saved automatically in this browser and in the results folder on this computer. You can close the page and continue later by typing the same name. At the end of each sitting, and when you finish, click **Download annotations** and send us the JSON file. **Load annotations** adds annotations from a file downloaded earlier; for each case the newer annotation is kept."
+      : "Your annotations are kept in this browser on this computer only; nothing is uploaded. You can close the page and continue later in the same browser by typing the same name. At the end of each sitting, and when you finish, click **Download annotations** and send us the JSON file. To continue on another computer, download the annotations here, then use **Load annotations** there; for each case the newer annotation is kept.");
+    openBox("helpBox", "gOk");
+  }
+  $("help").onclick = openHelp;
+  $("gOk").onclick = () => closeBox($("helpBox"));
   document.querySelectorAll("#filter button").forEach((b) => (b.onclick = () => {
     filt = b.dataset.f;
     document.querySelectorAll("#filter button").forEach((x) => x.classList.toggle("on", x === b));
@@ -1334,48 +1355,53 @@
   }));
   $("goto").addEventListener("keydown", (e) => {
     if (e.key !== "Enter") return;
-    const v = $("goto").value.trim();
+    const g = $("goto"), v = g.value.trim();
     if (!v || !session) return;
     let k = -1;
     if (/^\d+$/.test(v) && +v >= 1 && +v <= N) k = +v - 1;
     else {
-      const u = v.toUpperCase();
-      k = cases.findIndex((c) => c.id.toUpperCase() === u);
-      if (k < 0) k = cases.findIndex((c) => c.id.toUpperCase().startsWith(u));
+      const u = v.toUpperCase(), ids = cases.map((c) => c.id.toUpperCase());
+      k = ids.indexOf(u);
+      if (k < 0) k = ids.findIndex((x) => x.startsWith(u));
+      if (k < 0) k = ids.findIndex((x) => x.includes(u));
     }
-    if (k < 0) return toast("No case “" + v + "”", true);
-    $("goto").value = "";
-    $("goto").blur();
+    if (k < 0) { g.classList.add("bad"); setTimeout(() => g.classList.remove("bad"), 900); return; }
+    g.value = "";
+    g.blur();
     go(k);
   });
 
-  // ---------------------------------------------------------------- light / dark
+  // ---------------------------------------------------------------- bright or dark: the eye at the top left switches
+  // Bright by default, whatever the computer's setting; the choice is kept per browser and set on <html data-theme>
+  // before the page draws (index.html). The eye says what it switches to, not what the page is.
   const ICON = {
     moon: '<svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>',
     sun: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
   };
-  function themeBtn() {
-    const dark = document.documentElement.dataset.theme === "dark", b = $("themeBtn");
-    b.innerHTML = dark ? ICON.sun : ICON.moon;
-    b.title = dark ? "Switch to light" : "Switch to dark";
-    b.setAttribute("aria-label", b.title);
+  const darkNow = () => document.documentElement.dataset.theme === "dark";
+  function themeButton() {
+    const to = darkNow() ? "bright" : "dark";
+    $("themecap").textContent = "Switch to " + to;
+    $("themebadge").innerHTML = to === "dark" ? ICON.moon : ICON.sun;
+    $("theme").title = "Switch to " + to;
+    $("theme").setAttribute("aria-label", $("theme").title);
   }
-  $("themeBtn").onclick = () => {
-    const t = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  $("theme").onclick = () => {
+    const t = darkNow() ? "light" : "dark";
     document.documentElement.dataset.theme = t;
     lsSet(LS + "theme", t);
-    themeBtn();
+    themeButton();
   };
 
   // ---------------------------------------------------------------- texts from guidelines.js
   function buildTexts() {
-    rich($("wIntro"), G.intro);
+    // the headline, the sentence under it, the introduction, the guidelines in short (as Retify's guidelines.json)
+    $("question").textContent = plain(G.question) || "Ophthalmic image–description audit";
+    rich($("task"), G.task || "");
+    $("task").title = plain(G.task);
     rich($("gIntro"), G.intro);
-    $("wQuestions").replaceChildren(...G.questions.map((q) => {
-      const li = el("li");
-      li.append(el("b", null, plain(q.title)), " ", el("small", null, q.options.map((o) => o.label).join(" · ")));
-      return li;
-    }));
+    rich($("wIntro"), G.welcome || G.intro);
+    rich($("wRules"), G.in_short || "");
     $("gNotes").replaceChildren(...(G.notes || []).map((t) => rich(el("li"), t)));
     $("gRubric").replaceChildren(...G.questions.map((q, qi) => {
       const d = el("div", "rq"), ul = el("ul");
@@ -1389,8 +1415,6 @@
       d.append(ul);
       return d;
     }));
-    const s = $("sRole");
-    for (const [v, label] of ROLES) s.add(new Option(label, v));
   }
 
   // ---------------------------------------------------------------- start
@@ -1403,7 +1427,7 @@
     $("fatalMsg").textContent = msg;
     $("save").textContent = "Not loaded";
     $("save").className = "save err";
-    for (const id of ["loadBtn", "expJson", "expCsv", "expXlsx"]) $(id).disabled = true;
+    for (const id of ["loadBtn", "dlBtn"]) $(id).disabled = true;
   }
   function checkManifest(m) {
     if (!m || typeof m !== "object") return enc.on ? "The decrypted case list is not an object." : DATA + "/manifest.js does not define window.AUDIT_MANIFEST.";
@@ -1421,15 +1445,15 @@
   async function start(m) {
     M = m; cases = m.cases; N = cases.length;
     byId = new Map(cases.map((c, k) => [c.id, k]));
-    $("setInfo").textContent = "Case list " + M.manifest_version + " · " + N + " cases" + (DATA !== "data" ? " · folder " + DATA : "");
+    $("nTotal").textContent = N;
+    $("setInfo").textContent = "Version " + M.manifest_version;
     buildQuestions();
     buildTexts();
     let storageOk = lsSet(LS + "probe", "1");
     try { localStorage.removeItem(LS + "probe"); } catch (e) { storageOk = false; }
-    if (!storageOk) banner("This browser does not let the page save answers (private window or blocked storage). Your answers are kept only while this page is open: please Export JSON often, or open the page in a normal window.");
-    if (!window.XLSX) { $("expXlsx").title = "Excel export is not available (vendor/xlsx.full.min.js is missing)"; }
+    if (!storageOk) banner("This browser does not let the page keep your annotations (a private window, or blocked storage). They are kept only while this page is open: please download your annotations often, or open the page in a normal window.");
+    if (!window.XLSX) { $("dlXlsx").disabled = true; $("dlXlsx").title = "The Excel file cannot be made here (vendor/xlsx.full.min.js is missing)"; }
     server.on = await ping();
-    $("gServer").hidden = !server.on;
     showSave();
     const r = await openSession(false);
     if (r) await startSession(r);
@@ -1552,7 +1576,7 @@
   $("sLock").onclick = lockPage;
 
   async function boot() {
-    themeBtn();
+    themeButton();
     enableButtons(false);
     const hashCode = takeHashCode();                // first of all: the code leaves the address bar
     if (!G || !Array.isArray(G.questions)) return fatal("The rubric could not be loaded", "guidelines.js is missing or damaged. Please unzip the whole folder again and open index.html from inside it.");

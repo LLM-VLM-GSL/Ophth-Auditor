@@ -2,27 +2,34 @@
 
 A static web page for a human audit of ophthalmic image–description samples. Each case shows one image, the text
 description paired with it, and the narration it was derived from (an automatic transcript and the audio clip).
-Raters answer a 7-question rubric with the keyboard or the mouse; their answers are saved in their own browser, and
-they export a file at the end of each sitting. There is no server and no account.
+Raters answer a 7-question rubric with the keyboard or the mouse; their annotations are saved in their own browser,
+and they download a file at the end of each sitting. There is no server and no account.
 
 The audit cases (images, descriptions, narration transcripts and audio) are in `web/data/` (`manifest.js`,
-`images/`, `audio/`). Raters identify themselves by name when they start, as in Retify; their
-answers are stored per rater.
+`images/`, `audio/`), in plaintext. Raters identify themselves by name only when they start; their annotations are
+stored per name.
+
+The page follows the review tool Retify in what reviewers see and
+do; see "How the page behaves" below.
 
 ## For raters
 
 1. **Open https://llm-vlm-gsl.github.io/Ophth-Auditor/** in Chrome or Edge, not in a private window (it would forget
-   your answers).
-2. **Enter your name.** Your answers are saved in this browser under
-   that name: to continue later, open the page again on the same computer and browser and type the same name.
-3. **Answer the 7 questions** of each case. **Guide** (top right) has the full rubric and `?` lists the keyboard
-   shortcuts: `1`–`7` answer the highlighted question, `←` `→` change the case, `Space` plays the audio, `F` shows
-   the image full size. A complete case opens the next one.
-4. **At the end of each sitting, and when you finish, click Export JSON** and send the downloaded file
-   (`ophth_audit_<your-name>_<date-time>.json`) to the study team, the way they asked. CSV and Excel are copies for
-   your own use. **Load annotations** brings answers from an exported file back (for example on another computer).
+   your annotations).
+2. **Type your name.** The page finds your session in this browser (any word of the name finds it); a new session
+   needs your full name, first and last. To continue later, open the page again on the same computer and browser and
+   type the same name.
+3. **Answer the 7 questions** of each case: click an answer or press its number (`1`–`7`); the next question is
+   highlighted, and when all 7 are answered the next case still to do opens. **How to** (top right) has the full
+   guidelines and every key: `←` `→` change the case, `Space` plays the audio, `Enter` shows the image full size.
+4. **At the end of each sitting, and when you finish, click Download annotations → JSON** and send the downloaded
+   file (`ophth_audit_<your-name>_<date-time>.json`) to the study team, the way they asked. Excel and CSV are copies
+   for your own use. **Load annotations** brings annotations from a downloaded file back (for example on another
+   computer).
 
-Please do not share, copy, upload or screenshot the images and texts, and do not forward the link or the code.
+The **eye** at the top left switches the page between bright and dark.
+
+Please do not share, copy, upload or screenshot the images and texts, and do not forward the link.
 
 ## How the page works
 
@@ -31,27 +38,61 @@ Please do not share, copy, upload or screenshot the images and texts, and do not
 | File | Role |
 |---|---|
 | `index.html`, `style.css`, `app.js` | the page |
-| `guidelines.js` | the rubric: questions, answer codes, help texts (`rubric-v1`) |
-| `config.js` | settings: `server: false` here, so the page never calls a server API |
-| `vendor/xlsx.full.min.js` | SheetJS Community Edition (Apache-2.0), for the Excel export and import |
-| `data/` | the encrypted data (see below) |
+| `guidelines.js` | the words of the task (headline, the sentence under it, welcome, guidelines in short, introduction, notes) and the rubric: questions, answer codes, help texts (`rubric-v1`) |
+| `config.js` | settings: `server: false` (the page never calls a server API) and `encrypted: false` (the data is plaintext) |
+| `vendor/xlsx.full.min.js` | SheetJS Community Edition (Apache-2.0), for the Excel download and load |
+| `data/` | the audit cases: `manifest.js`, `images/`, `audio/` |
 
-The same code also runs offline: opened from disk (`file://`), it loads a plaintext `data/manifest.js` with a
-`<script>` tag. Served over http(s), it first fetches `data/meta.json`; when that file describes encrypted data, the
-page asks for the access code, decrypts `data/manifest.bin`, then decrypts each image and audio clip when its case
-is shown (the neighbouring cases in advance) and keeps only a few of them in memory. Answers are kept in the
-browser's `localStorage` under `ophth-audit:ann:<manifest_version>:<rater-slug>`. The page requests nothing from
-other origins and is marked `noindex, nofollow`.
+The page loads `data/manifest.js` with a `<script>` tag, so the same code also runs offline, opened from disk
+(`file://`); `?data=<folder>` (relative to `index.html`) loads another data folder. With `encrypted: true` in
+`config.js`, the page served over http(s) instead looks for encrypted data (`data/meta.json`, see "Encrypted data
+format" below), asks for the access code and decrypts each file in the browser. Annotations are kept in the
+browser's `localStorage` under `ophth-audit:ann:<manifest_version>:<rater-slug>`; the theme choice under
+`ophth-audit:theme`. The page requests nothing from other origins and is marked `noindex, nofollow`.
+
+### How the page behaves (as in Retify)
+
+- **Bright and dark.** Bright by default, whatever the computer's setting. The eye at the top left is the switch: it
+  stands out, with a moon or sun badge and a line under it naming the theme it switches to ("Switch to dark" /
+  "Switch to bright"). The choice is kept in the browser and applied before the page draws. Colors are tokens on
+  `:root`, in both themes.
+- **The top bar.** The task in plain words is the headline, with one sentence under it (`question`, `task` in
+  `guidelines.js`). On the right: who is annotating over whether it is saved; **How to** (accent, gently floating),
+  with the guidelines, the rubric and every key; **Load annotations** over **Download annotations**. Download opens one
+  dialog with Excel, CSV and JSON and how many cases are annotated.
+- **Plain words.** "Annotations" and "download"; no technical terms (server, slug, manifest, export) on the page.
+- **A short welcome for someone new**: after the name, when that name has no annotations yet, once per name in a
+  browser. Help otherwise only from How to (or `?`).
+- **The image is a small canvas**: scroll zooms at the pointer, drag moves, never smaller than it fits (up to 8×);
+  double-click, **Reset view** or `0` shows it whole; each case opens whole; `Enter` shows it full size.
+- **The queue**: orange = to do, blue = started, green = done, red = flagged (an answer that reports a problem).
+  "Go to": a number within range is a case number, otherwise a case ID or part of one. After the last question of a
+  case, the next case still to do opens.
+- **Narrow screens**: below 1100 px the texts and questions go under the image and the page scrolls; below 900 px
+  the top bar wraps and the queue moves below the case.
+- What differs from Retify on purpose: 7 questions per case (with keyboard answering) instead of Yes/No, the
+  description, transcript and audio next to the image, no relay (no shared progress, no disagreement tab), the JSON
+  file is the one to send, and three columns so that all 7 questions stay visible on a 1366×768 laptop.
+
+## For LLM agents
+
+The same cases can be annotated by a language model through an API, for a pilot or for comparison with the human
+raters. `web/agent/` (published at `https://llm-vlm-gsl.github.io/Ophth-Auditor/agent/`) holds a machine-readable
+entry: `AGENT.md` (instructions), `index.json`, `rubric.json`, `tasks.jsonl` and `output_schema.json`, generated from
+`web/guidelines.js` and `web/data/manifest.js` by `tools/build_agent_spec.py` (the Pages workflow checks that they are
+up to date). `agent/llm_annotate.py` runs a batch against Anthropic or any OpenAI-compatible endpoint and writes the
+same JSON file a person downloads, with `rater.role = "llm"`; see `agent/README.md`. LLM annotations are reported
+separately from the human audit.
 
 ## Exports
 
-**JSON** (the file to send back), named `ophth_audit_<rater-slug>_<YYYYMMDD-HHMM>.json`:
+Download annotations offers three files with the same content. **JSON** (the file to send back), named `ophth_audit_<rater-slug>_<YYYYMMDD-HHMM>.json`:
 
 ```json
 {
   "tool": "ophth-audit", "tool_version": "1.0", "rubric_version": "rubric-v1",
   "manifest_version": "v1-2026-11-18", "exported_at": "2026-11-18T10:31:05-07:00",
-  "rater": {"name": "Full Name", "role": "ophthalmologist", "years_experience": 5},
+  "rater": {"name": "Full Name", "role": "", "years_experience": null},
   "annotations": {
     "A001": {"q1_ophthalmic": "yes", "q2_modality": "oct", "q3_crop": "good", "q4_image_text": "full",
              "q5_faithful": "partial", "q6_clinical": "correct", "q7_pii": "no", "note": "",
@@ -60,7 +101,9 @@ other origins and is marked `noindex, nofollow`.
 }
 ```
 
-Roles: `ophthalmologist`, `optometrist`, `resident_fellow`, `trained_grader`, `researcher`, `other`. Answer codes:
+The page asks for the name only, so `role` is always `""` and `years_experience` always `null` (the fields stay for
+the analysis script; earlier files may have a role: `ophthalmologist`, `optometrist`, `resident_fellow`,
+`trained_grader`, `researcher`, `other`). Answer codes:
 
 | Question | Codes |
 |---|---|
@@ -83,13 +126,14 @@ rater block, so its rater is the slug in the file name.
 leading and trailing `-`, keep at most 40 characters; empty gives `rater`. Example: `Dr. Jane O'Neil` →
 `dr-jane-o-neil`.
 
-**Load annotations** reads JSON, CSV and Excel files exported by this page, and also files exported by earlier
+**Load annotations** reads JSON, CSV and Excel files downloaded from this page, and also files exported by earlier
 versions of the offline package (another file-name prefix before `_audit_<slug>_<date>`, another `tool` id). For each
 case, the answer with the later `annotated_at` wins.
 
 ## Encrypted data format (`ophth-audit-enc-v1`)
 
-Written by `tools/encrypt_data.py` (its docstring is the reference):
+Not used by the site now (its data is plaintext); kept for later use. The page reads it only when `config.js` says
+`encrypted: true`. Written by `tools/encrypt_data.py` (its docstring is the reference):
 
 - `meta.json`, plaintext, exactly these keys: `{"format": "ophth-audit-enc-v1", "dataset": <manifest_version>,
   "created": <ISO time>, "kdf": {"name": "PBKDF2", "hash": "SHA-256", "iterations": 600000, "salt": <base64, 16 bytes>},
@@ -129,22 +173,33 @@ or Edge for the browser tests.
 
 ```bash
 python tests/test_encrypt.py                       # round trip of the encryption tool on the dummy fixture
-node tests/e2e.mjs plain                           # file:// with the plaintext fixture: rating, exports, load/merge
-node tests/e2e.mjs encrypted                       # http://127.0.0.1 with an encrypted copy of the fixture: access
-                                                   #   code, remembered key, Lock, #key= links, decryption, errors
-node tests/e2e.mjs real <outdir> <code file>       # the site's own data/: every case decrypts (keep <outdir> outside
-                                                   #   the repository: it receives screenshots)
-python tests/serve.py                              # this site at http://127.0.0.1:8790/ (or --data <folder>)
+node tests/e2e.mjs plain [outdir]                  # file:// with the plaintext fixture: the whole flow (name, welcome,
+                                                   #   keys, skip logic, timing, downloads, load/merge), the Retify
+                                                   #   behaviour (eye switch, How to, plain words), layout at
+                                                   #   1366x657 bright and dark, 1000, 820 and 420 px
+node tests/e2e.mjs real <outdir> [code file]       # serves web/ as it is on http://127.0.0.1 (like GitHub Pages) and
+                                                   #   walks every case of data/: image and audio load; layout and
+                                                   #   screenshots (the code file only for encrypted data)
+node tests/e2e.mjs encrypted [outdir]              # an encrypted copy of the fixture, served with a config.js that
+                                                   #   says encrypted: true: access code, remembered key, Lock, #key=
+python tests/serve.py                              # this site at http://127.0.0.1:8790/ (or --data <folder>,
+                                                   #   --config <file> for another config.js)
 ```
 
-Environment variables: `PYTHON` (a Python with the packages above), `CHROME` (browser path). `tests/fixture/data`
+Environment variables: `PYTHON` (a Python with the packages above), `CHROME` (browser path). Keep every `<outdir>`
+outside the repository: it receives downloads and screenshots. `tests/fixture/data`
 holds six dummy cases (drawn images, silent audio) made by `tests/make_fixture.py`.
 
 ## Security model and its limits
 
-What it protects:
+The site's data is now **plaintext** (`config.js`: `encrypted: false`): anyone who has the link, or looks at this
+repository, can see the cases. The page is marked `noindex, nofollow`, does not name the dataset, and requests
+nothing from other origins; raters are asked not to forward the link. What follows applies only when the data is
+encrypted again (`encrypted: true` and data built by `tools/encrypt_data.py`).
 
-- The data in this public repository and on the site is encrypted with AES-256-GCM under a key derived from the
+What encryption protects:
+
+- The data in the repository and on the site is encrypted with AES-256-GCM under a key derived from the
   access code with PBKDF2-HMAC-SHA256 (600,000 iterations, random 16-byte salt). The code has 119 bits of randomness,
   far beyond guessing. Without it, one can see only the page code, the number and sizes of the files, and the
   dataset version label and build time in `meta.json`.
@@ -167,8 +222,8 @@ Its limits:
 - The page code is public and is what decrypts the data: whoever can push to this repository could change it to
   capture codes. Keep write access limited.
 - Decryption needs a secure context: https, or http://127.0.0.1 / http://localhost.
-- Plaintext must never be committed: `.gitignore` excludes plaintext media and manifests under `web/data/`, the Pages
-  workflow refuses to publish them, and the encryption tool never writes them into its output folder.
+- The encryption tool never writes plaintext into its output folder. (While the site publishes plaintext data, the
+  Pages workflow and `.gitignore` allow it; restore their checks before switching back to encrypted data.)
 
 ## Licence and acknowledgements
 

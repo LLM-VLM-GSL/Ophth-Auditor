@@ -31,6 +31,9 @@ jobs:
             echo "::error::the files above name the study dataset"; exit 1
           fi
 
+      - name: The agent entry (web/agent/) matches the rubric and the cases
+        run: python3 tools/build_agent_spec.py --check
+
       - name: The page code parses
         run: |
           for f in web/*.js; do node --check "$f"; done

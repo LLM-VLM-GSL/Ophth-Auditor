@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Static file server for local tests of the audit page (Python standard library; raters never need it).
 
-    python tests/serve.py [--port 8790] [--web web] [--data <folder>]
+    python tests/serve.py [--port 8790] [--web web] [--data <folder>] [--config <file>]
 
 Serves --web (default: web/ of this repository) at http://127.0.0.1:<port>/. With --data, the path /data/ is served
-from that folder instead of web/data/ (for example an encrypted copy of the test fixture). Listens on 127.0.0.1 only,
+from that folder instead of web/data/ (for example an encrypted copy of the test fixture); with --config, /config.js is
+that file instead of web/config.js (for example one that says encrypted: true). Listens on 127.0.0.1 only,
 sends no directory listings and "Cache-Control: no-cache", and answers /api/* with 404 like a static host does.
 Prints the page address once it listens.
 """
@@ -20,6 +21,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class Handler(SimpleHTTPRequestHandler):
     data_dir = None
+    config_file = None
     # explicit types: on Windows, mimetypes reads the registry, where .js is sometimes text/plain
     extensions_map = dict(SimpleHTTPRequestHandler.extensions_map)
     extensions_map.update({".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
@@ -28,6 +30,8 @@ class Handler(SimpleHTTPRequestHandler):
 
     def translate_path(self, path):
         p = unquote(urlsplit(path).path)
+        if self.config_file and p == "/config.js":
+            return self.config_file
         if self.data_dir and p.startswith("/data/"):
             parts = [x for x in p[len("/data/"):].split("/") if x not in ("", ".", "..")]
             return os.path.join(self.data_dir, *parts)
@@ -57,8 +61,10 @@ def main(argv=None):
     ap.add_argument("--port", type=int, default=8790)
     ap.add_argument("--web", default=os.path.join(ROOT, "web"))
     ap.add_argument("--data", default=None, help="folder served at /data/ instead of <web>/data")
+    ap.add_argument("--config", default=None, help="file served at /config.js instead of <web>/config.js")
     a = ap.parse_args(argv)
-    handler = type("TestHandler", (Handler,), {"data_dir": os.path.abspath(a.data) if a.data else None})
+    handler = type("TestHandler", (Handler,), {"data_dir": os.path.abspath(a.data) if a.data else None,
+                                              "config_file": os.path.abspath(a.config) if a.config else None})
     httpd = ThreadingHTTPServer(("127.0.0.1", a.port), functools.partial(handler, directory=os.path.abspath(a.web)))
     httpd.daemon_threads = True
     print("http://127.0.0.1:%d/" % a.port, flush=True)

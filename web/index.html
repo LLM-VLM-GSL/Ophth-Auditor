@@ -12,51 +12,48 @@
 </head>
 <body>
 <header class="top">
- <div class="brand">
-  <span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3.2"/></svg></span>
-  <div><div class="eyebrow">Human audit</div><h1>Ophthalmic image–description audit</h1></div>
- </div>
- <div class="status">
-  <span id="who" hidden><span id="whoName"></span><button type="button" id="switchBtn" class="mini" title="Work under another name">Switch</button></span>
-  <span id="save" class="save">Loading…</span>
- </div>
- <div class="actions">
-  <button type="button" id="guideBtn" class="howto" title="The task and the full rubric (G)"><span class="qi">i</span>Guide</button>
-  <button type="button" id="keysBtn" class="icon" title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">?</button>
-  <button type="button" id="themeBtn" class="icon" title="Switch to dark" aria-label="Switch to dark"></button>
-  <button type="button" id="loadBtn" title="Merge annotations from a JSON, CSV or Excel file exported earlier">Load annotations</button>
-  <div class="export" role="group" aria-label="Export">
-   <button type="button" id="expJson" class="primary" title="Download your annotations as JSON (the file to send back)">Export JSON</button>
-   <button type="button" id="expCsv" title="Download your annotations as CSV">CSV</button>
-   <button type="button" id="expXlsx" title="Download your annotations as Excel">Excel</button>
+ <button type="button" class="markbtn" id="theme" title="Switch to dark" aria-label="Switch to dark"><span class="mark"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3.2"/></svg><span class="badge" id="themebadge"></span></span><span class="themecap" id="themecap">Switch to dark</span></button>
+ <div class="brand"><div class="eyebrow">Ophthalmic image–description audit</div><h1 id="question"></h1>
+  <div class="sub" id="task"></div></div>
+ <div class="top-right">
+  <div class="status">
+   <span id="who" hidden>Reviewer: <span id="whoName"></span><button type="button" id="switchBtn" class="mini" title="Annotate under another name">Switch</button></span>
+   <span id="save" class="save">Loading…</span>
+  </div>
+  <button type="button" id="help" class="howto" title="How to annotate, with the full guidelines"><span class="qm">?</span>How to</button>
+  <div class="stack">
+   <button type="button" id="loadBtn" title="Continue from an annotations file downloaded earlier">Load annotations</button>
+   <button type="button" id="dlBtn" class="primary" title="Download your annotations (Ctrl+S: the JSON file)">Download annotations</button>
   </div>
  </div>
 </header>
 <div class="banner" id="banner" hidden></div>
 <div class="work" id="work">
  <aside class="side">
-  <div class="eyebrow">Cases</div>
+  <div class="eyebrow">Review queue</div><h2>Cases <span id="nTotal"></span></h2>
   <div class="setinfo" id="setInfo">Loading…</div>
   <div class="prog">
-   <div class="pline"><span>Complete</span><b id="pDone">0 / 0</b></div>
+   <div class="pline"><span>Progress</span><b id="pDone">0 / 0</b></div>
    <div class="pbar"><i id="pBar"></i></div>
    <div class="pline sm"><span>Flagged <b id="pFlag">0</b></span><span>Left <b id="pLeft">0</b></span></div>
-   <div class="pline sm"><span title="Median time per complete case">Median <b id="pMed">–</b></span><span id="pEta"></span></div>
+   <div class="pline sm"><span title="Median time per annotated case">Per case <b id="pMed">–</b></span><span id="pEta"></span></div>
   </div>
+  <div class="lbl">Show</div>
   <div class="seg filt" id="filter"><button type="button" data-f="all" class="on">All</button><button type="button" data-f="todo">To do</button><button type="button" data-f="done">Done</button><button type="button" data-f="flag">Flagged</button></div>
-  <input id="goto" class="goto" placeholder="Go to # or case ID" autocomplete="off" spellcheck="false" aria-label="Go to case number or ID">
+  <div class="lbl">Go to case number or ID</div>
+  <input id="goto" class="goto" placeholder="e.g. 25 or A025" autocomplete="off" spellcheck="false" aria-label="Go to case number or ID">
   <div class="legend"><span class="lg todo">To do</span><span class="lg partial">Started</span><span class="lg done">Done</span><span class="lg flag">Flagged</span></div>
   <div id="list" class="list" role="list"></div>
  </aside>
  <main class="center">
   <div class="toolbar">
    <h2 id="caseTitle">Case</h2><span class="pill" id="caseId"></span><span class="state todo" id="caseState"></span>
-   <div class="nav"><button type="button" id="prevBtn" title="Previous case (←)">← Prev</button><button type="button" id="nextBtn" title="Next case (→)">Next →</button><button type="button" id="todoBtn" title="Next case still to do (N)">Next to do</button></div>
+   <div class="nav"><button type="button" id="prevBtn" title="Previous case (←)">← Previous</button><button type="button" id="nextBtn" title="Next case (→)">Next →</button><button type="button" id="todoBtn" title="Next case still to do (N)">Next to do</button></div>
   </div>
   <div class="imgcard">
    <div class="stage" id="stage"><img id="img" alt="Case image" draggable="false"><div class="imgmsg" id="imgMsg" hidden></div></div>
-   <div class="viewbtns glass"><button type="button" id="resetBtn" title="Back to the whole image (double-click, R or 0)">Reset view</button><button type="button" id="fullBtn" title="Full-screen view (F)">Full size</button></div>
-   <div class="hint glass" aria-hidden="true">Scroll to zoom · drag to move · double-click to reset</div>
+   <div class="viewbtns glass"><button type="button" id="resetBtn" title="Back to the whole image (double-click the image, or 0)">Reset view</button><button type="button" id="fullBtn" title="See the image full size (Enter)">Full size</button></div>
+   <div class="hint glass" aria-hidden="true">Scroll to zoom<br>Drag to move</div>
   </div>
  </main>
  <section class="panel" aria-label="Case text and questions">
@@ -81,7 +78,7 @@
   <div class="card qs" id="qs">
    <div id="qlist" class="qlist"></div>
    <div class="qhelp" id="qhelp"></div>
-   <textarea id="note" class="note" rows="1" maxlength="2000" placeholder="Note (optional), e.g. what and where the identifying information is. Esc leaves the box." aria-label="Note for this case"></textarea>
+   <textarea id="note" class="note" rows="1" maxlength="2000" placeholder="Optional note (saved automatically), e.g. what and where the identifying information is" aria-label="Note for this case"></textarea>
   </div>
  </section>
 </div>
@@ -92,7 +89,7 @@
 <div class="viewer" id="viewer" hidden>
  <div class="stage vstage" id="vstage"><img id="vimg" alt="Case image, full size" draggable="false"></div>
  <div class="viewbtns glass vbtns"><button type="button" id="vReset">Reset view</button><button type="button" id="vClose">Close (Esc)</button></div>
- <div class="hint glass" aria-hidden="true">Scroll to zoom · drag to move · double-click to reset</div>
+ <div class="hint glass" aria-hidden="true">Scroll to zoom<br>Drag to move</div>
 </div>
 
 <!-- access code (encrypted data only) -->
@@ -109,74 +106,77 @@
  </div>
 </div>
 
-<!-- session -->
+<!-- who is annotating -->
 <div class="modal" id="sessBox" hidden data-esc="no">
  <div class="box">
-  <h2>Who is rating?</h2>
-  <p>Your annotations are saved in this browser under your name. To continue later, open this page again and type the <b>same name</b>.</p>
+  <h2>Who is annotating?</h2>
+  <p>Type your name to continue where you left off. Your annotations are saved automatically in this browser under your name: to continue later, open this page again on this computer and type the same name.</p>
   <form id="sessForm" autocomplete="off" novalidate>
-   <label class="fl">Your name<input id="sName" maxlength="80" placeholder="Your name" spellcheck="false"></label>
-   <div class="frow" hidden>
-    <label class="fl">Role<select id="sRole"><option value="">Choose…</option></select></label>
-    <label class="fl">Years of experience<input id="sYears" type="number" min="0" max="70" step="1" inputmode="numeric" placeholder="e.g. 5"></label>
-   </div>
-   <div id="sFound" class="found" hidden></div>
-   <div id="sSaved" class="saved" hidden></div>
+   <input id="sName" class="field" maxlength="80" placeholder="e.g., Tina" spellcheck="false" aria-label="Your name">
+   <div id="sRes" class="sessres"></div>
    <div id="sErr" class="ferr" hidden></div>
    <div class="row"><button type="button" id="sLock" class="linkbtn" hidden title="Forget the access code on this computer; the page then asks for it again">Lock / forget code</button><button type="button" id="sCancel" hidden>Cancel</button><button type="submit" class="primary" id="sGo">Start</button></div>
   </form>
  </div>
 </div>
 
-<!-- welcome (first visit) -->
+<!-- welcome, for someone new -->
 <div class="modal" id="welcomeBox" hidden data-esc="no">
- <div class="box wide">
-  <h2>Welcome to the image–description audit</h2>
+ <div class="box" style="width:min(640px,92vw)">
+  <h2>Welcome</h2>
   <p class="lead" id="wIntro"></p>
-  <h3>The 7 questions</h3>
-  <ol class="wq" id="wQuestions"></ol>
-  <h3>Working through the cases</h3>
-  <p>Answer with the mouse or the number keys: <kbd>1</kbd>–<kbd>7</kbd> answer the highlighted question and move on, <kbd>↑</kbd> <kbd>↓</kbd> change the question, <kbd>←</kbd> <kbd>→</kbd> change the case, <kbd>Space</kbd> plays the audio, <kbd>?</kbd> lists all keys. A complete case opens the next one by itself. <b>Guide</b>, at the top, has the full rubric.</p>
-  <p id="wStore"></p>
-  <div class="row"><button type="button" class="primary" id="wOk">Start rating</button></div>
+  <ol class="steps">
+   <li>Look at the <b>image</b>, read the <b>description</b> next to it, and compare it with the <b>narration</b>: the transcript, or the audio (press <kbd>Space</kbd>).</li>
+   <li>Answer the <b>7 questions</b>: click an answer or press its number. The next question is highlighted; when all 7 are answered, the next case opens.</li>
+   <li id="wRules">The guidelines are loading…</li>
+   <li id="wStore">Your annotations are saved in this browser. At the end of each sitting, click <b>Download annotations</b> and send us the JSON file.</li>
+  </ol>
+  <p>Scroll on the image to zoom in. <b>How to</b>, at the top, has the full guidelines and all keys. The <b>eye</b> at the top left switches the page between bright and dark.</p>
+  <div class="row"><button type="button" class="primary" id="wOk">Start</button></div>
  </div>
 </div>
 
-<!-- guide -->
-<div class="modal" id="guideBox" hidden>
+<!-- How to -->
+<div class="modal" id="helpBox" hidden>
  <div class="box wide">
-  <h2>Guide</h2>
-  <p class="lead" id="gIntro"></p>
+  <h2>How to annotate</h2>
+  <p class="lead intro" id="gIntro"></p>
+  <h3>What you see</h3>
+  <p><b>The image</b>, taken from a teaching video · <b>Description to audit</b> the text paired with the image · <b>Narration</b> what the expert said at that moment: an automatic transcript (for other languages an English translation; <b>Show original</b> or <kbd>T</kbd> switches) and the audio clip.</p>
+  <h3>Guidelines</h3>
   <ul class="notes" id="gNotes"></ul>
-  <h3>The rubric</h3>
+  <h3>The 7 questions</h3>
   <div id="gRubric" class="rubric"></div>
-  <h3>Saving and sending your work</h3>
-  <p>Every answer is saved automatically in this browser<span id="gServer" hidden> (and on this computer's audit server, because the page was opened through <code>serve.py</code>)</span>. You can close the page and continue later in the same browser by typing the same name. When you finish, or at the end of each sitting, click <b>Export JSON</b> and send the downloaded file to the study team. <b>Load annotations</b> merges a file exported earlier (for example, to move to another computer); for each case the newer annotation wins.</p>
-  <p>Please do not share, copy or upload the images or texts.</p>
-  <div class="row"><button type="button" class="primary" id="gOk">Close</button></div>
- </div>
-</div>
-
-<!-- keyboard shortcuts -->
-<div class="modal" id="keysBox" hidden>
- <div class="box">
-  <h2>Keyboard shortcuts</h2>
-  <table class="keys">
+  <h3>Working through the cases</h3>
+  <p>Click an answer or press its number; the next question is highlighted, and when all 7 are answered the next case still to do opens by itself. You can go back to any case from the list on the left and change it. On the image, scroll to zoom in, drag to move around, and double-click (or <b>Reset view</b>) to see it whole again; <b>Full size</b> opens it on the whole screen.</p>
+  <table class="keys" id="keysTable">
    <tr><td><kbd>1</kbd>–<kbd>7</kbd></td><td>Answer the highlighted question, then move to the next one</td></tr>
    <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>Previous / next question</td></tr>
    <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Previous / next case</td></tr>
    <tr><td><kbd>N</kbd></td><td>Next case still to do</td></tr>
-   <tr><td><kbd>Space</kbd></td><td>Play / pause the narration audio</td></tr>
+   <tr><td><kbd>Space</kbd></td><td>Play / pause the audio</td></tr>
    <tr><td><kbd>S</kbd></td><td>Audio speed: 1× → 1.5× → 2×</td></tr>
    <tr><td><kbd>T</kbd></td><td>Transcript: English translation ↔ original language</td></tr>
-   <tr><td><kbd>E</kbd></td><td>Write a note (<kbd>Esc</kbd> leaves the note box)</td></tr>
-   <tr><td><kbd>F</kbd></td><td>Full-size image (<kbd>Esc</kbd> closes)</td></tr>
-   <tr><td><kbd>+</kbd> <kbd>−</kbd> / <kbd>R</kbd> <kbd>0</kbd></td><td>Zoom in / out · reset the view</td></tr>
-   <tr><td><kbd>G</kbd> · <kbd>?</kbd></td><td>Guide · this list</td></tr>
-   <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Export JSON (the file to send back)</td></tr>
+   <tr><td><kbd>E</kbd></td><td>Write a note (<kbd>Esc</kbd> leaves the note box; keys do nothing while you type)</td></tr>
+   <tr><td><kbd>Enter</kbd></td><td>Full size (<kbd>Enter</kbd> or <kbd>Esc</kbd> closes it)</td></tr>
+   <tr><td><kbd>+</kbd> <kbd>−</kbd> · <kbd>0</kbd></td><td>Zoom in / out · reset view</td></tr>
+   <tr><td><kbd>?</kbd></td><td>This page</td></tr>
+   <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Download annotations (the JSON file)</td></tr>
   </table>
-  <p class="muted">Keys do nothing while you type in the note box. A complete case opens the next case still to do; use <kbd>←</kbd> to go back.</p>
-  <div class="row"><button type="button" class="primary" id="kOk">Close</button></div>
+  <p>The <b>eye</b> at the top left switches the page between bright and dark; the line under it says which one it switches to.</p>
+  <h3>Saving and sending</h3>
+  <p id="gStore"></p>
+  <p>Please do not share, copy or upload the images or texts.</p>
+  <div class="row"><button type="button" class="primary" id="gOk">Got it</button></div>
+ </div>
+</div>
+
+<!-- download annotations -->
+<div class="modal" id="dlBox" hidden>
+ <div class="box">
+  <h2>Download annotations</h2>
+  <p id="dlSum"></p>
+  <div class="row"><button type="button" id="dlXlsx">Excel (.xlsx)</button><button type="button" id="dlCsv">CSV</button><button type="button" class="primary" id="dlJson">JSON</button><button type="button" id="dlClose">Close</button></div>
  </div>
 </div>
 

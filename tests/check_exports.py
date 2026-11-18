@@ -33,7 +33,7 @@ COLS = ["no", "case_id"] + QIDS + ["note", "annotated_at", "time_spent_s"]
 REC_FIELDS = QIDS + ["note", "annotated_at", "time_spent_s"]
 TOP = ["tool", "tool_version", "rubric_version", "manifest_version", "exported_at", "rater", "annotations"]
 RATER_ROWS = ["name", "role", "years_experience", "manifest_version", "rubric_version", "exported_at"]
-ROLES = {"ophthalmologist", "optometrist", "resident_fellow", "trained_grader", "researcher", "other"}
+ROLES = {"ophthalmologist", "optometrist", "resident_fellow", "trained_grader", "researcher", "other", "llm"}
 NAME_RE = re.compile(r"^ophth_audit_(?P<slug>[a-z0-9-]{1,40})_(?P<stamp>\d{8}-\d{4})\.(?P<ext>json|csv|xlsx)$")
 
 failed = 0
@@ -108,7 +108,7 @@ def main():
     for f, slug in by_ext.get("json", []):
         d = json.load(open(os.path.join(a.folder, f), encoding="utf-8"))
         js = d
-        check("JSON top-level keys (in order)", list(d.keys()) == TOP, list(d.keys()))
+        check("JSON top-level keys (in order; an LLM batch may add a trailing \"run\" block)", [k for k in d.keys() if k != "run"] == TOP, list(d.keys()))
         check("JSON tool / tool_version", d["tool"] == TOOL and d["tool_version"] == TOOL_VERSION, (d["tool"], d["tool_version"]))
         check("JSON rubric_version", d["rubric_version"] == "rubric-v1", d["rubric_version"])
         check("JSON exported_at ISO-8601", iso_ok(d["exported_at"]), d["exported_at"])
