@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow">
+<title>Ophthalmic image–description audit</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23216f6b'/%3E%3Cpath d='M3 12s3.3-6 9-6 9 6 9 6-3.3 6-9 6-9-6-9-6z' fill='none' stroke='white' stroke-width='1.8'/%3E%3Ccircle cx='12' cy='12' r='2.8' fill='white'/%3E%3C/svg%3E">
+<script>try{var t=localStorage.getItem("ophth-audit:theme");if(t==="dark"||t==="light")document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+ <div class="brand">
+  <span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3.2"/></svg></span>
+  <div><div class="eyebrow">Human audit</div><h1>Ophthalmic image–description audit</h1></div>
+ </div>
+ <div class="status">
+  <span id="who" hidden><span id="whoName"></span><button type="button" id="switchBtn" class="mini" title="Work under another name">Switch</button></span>
+  <span id="save" class="save">Loading…</span>
+ </div>
+ <div class="actions">
+  <button type="button" id="guideBtn" class="howto" title="The task and the full rubric (G)"><span class="qi">i</span>Guide</button>
+  <button type="button" id="keysBtn" class="icon" title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">?</button>
+  <button type="button" id="themeBtn" class="icon" title="Switch to dark" aria-label="Switch to dark"></button>
+  <button type="button" id="loadBtn" title="Merge annotations from a JSON, CSV or Excel file exported earlier">Load annotations</button>
+  <div class="export" role="group" aria-label="Export">
+   <button type="button" id="expJson" class="primary" title="Download your annotations as JSON (the file to send back)">Export JSON</button>
+   <button type="button" id="expCsv" title="Download your annotations as CSV">CSV</button>
+   <button type="button" id="expXlsx" title="Download your annotations as Excel">Excel</button>
+  </div>
+ </div>
+</header>
+<div class="banner" id="banner" hidden></div>
+<div class="work" id="work">
+ <aside class="side">
+  <div class="eyebrow">Cases</div>
+  <div class="setinfo" id="setInfo">Loading…</div>
+  <div class="prog">
+   <div class="pline"><span>Complete</span><b id="pDone">0 / 0</b></div>
+   <div class="pbar"><i id="pBar"></i></div>
+   <div class="pline sm"><span>Flagged <b id="pFlag">0</b></span><span>Left <b id="pLeft">0</b></span></div>
+   <div class="pline sm"><span title="Median time per complete case">Median <b id="pMed">–</b></span><span id="pEta"></span></div>
+  </div>
+  <div class="seg filt" id="filter"><button type="button" data-f="all" class="on">All</button><button type="button" data-f="todo">To do</button><button type="button" data-f="done">Done</button><button type="button" data-f="flag">Flagged</button></div>
+  <input id="goto" class="goto" placeholder="Go to # or case ID" autocomplete="off" spellcheck="false" aria-label="Go to case number or ID">
+  <div class="legend"><span class="lg todo">To do</span><span class="lg partial">Started</span><span class="lg done">Done</span><span class="lg flag">Flagged</span></div>
+  <div id="list" class="list" role="list"></div>
+ </aside>
+ <main class="center">
+  <div class="toolbar">
+   <h2 id="caseTitle">Case</h2><span class="pill" id="caseId"></span><span class="state todo" id="caseState"></span>
+   <div class="nav"><button type="button" id="prevBtn" title="Previous case (←)">← Prev</button><button type="button" id="nextBtn" title="Next case (→)">Next →</button><button type="button" id="todoBtn" title="Next case still to do (N)">Next to do</button></div>
+  </div>
+  <div class="imgcard">
+   <div class="stage" id="stage"><img id="img" alt="Case image" draggable="false"><div class="imgmsg" id="imgMsg" hidden></div></div>
+   <div class="viewbtns glass"><button type="button" id="resetBtn" title="Back to the whole image (double-click, R or 0)">Reset view</button><button type="button" id="fullBtn" title="Full-screen view (F)">Full size</button></div>
+   <div class="hint glass" aria-hidden="true">Scroll to zoom · drag to move · double-click to reset</div>
+  </div>
+ </main>
+ <section class="panel" aria-label="Case text and questions">
+  <div class="texts" id="texts">
+   <div class="card desc">
+    <div class="eyebrow">Description to audit</div>
+    <p id="caption" class="caption"></p>
+   </div>
+   <div class="card narr">
+    <div class="narrhead"><span class="eyebrow">Narration · automatic transcript</span><span id="langInfo" class="langinfo"></span><button type="button" id="origBtn" class="mini" hidden title="Switch between the English translation and the original-language transcript (T)">Show original</button></div>
+    <div class="player" id="player">
+     <button type="button" id="playBtn" class="play" title="Play / pause (Space)" aria-label="Play"><svg viewBox="0 0 24 24" id="playIcon"><path d="M7 4.5v15l13-7.5z"/></svg></button>
+     <div class="track" id="track" title="Click or drag to seek"><i id="trackFill"></i></div>
+     <span class="ptime" id="pTime">0:00 / 0:00</span>
+     <div class="seg speed" id="speed" title="Playback speed (S)"><button type="button" data-r="1" class="on">1×</button><button type="button" data-r="1.5">1.5×</button><button type="button" data-r="2">2×</button></div>
+     <span class="nomedia" id="noAudio" hidden>No audio for this case</span>
+    </div>
+    <audio id="audio" preload="metadata"></audio>
+    <div class="transcript" id="transcript"></div>
+   </div>
+  </div>
+  <div class="card qs" id="qs">
+   <div id="qlist" class="qlist"></div>
+   <div class="qhelp" id="qhelp"></div>
+   <textarea id="note" class="note" rows="1" maxlength="2000" placeholder="Note (optional), e.g. what and where the identifying information is. Esc leaves the box." aria-label="Note for this case"></textarea>
+  </div>
+ </section>
+</div>
+<noscript><div class="fatal"><h2>JavaScript is turned off</h2><p>This page needs JavaScript. Please open it in Chrome or Edge with JavaScript enabled.</p></div></noscript>
+<div class="fatal" id="fatal" hidden><h2 id="fatalTitle"></h2><p id="fatalMsg"></p></div>
+
+<!-- full-size viewer -->
+<div class="viewer" id="viewer" hidden>
+ <div class="stage vstage" id="vstage"><img id="vimg" alt="Case image, full size" draggable="false"></div>
+ <div class="viewbtns glass vbtns"><button type="button" id="vReset">Reset view</button><button type="button" id="vClose">Close (Esc)</button></div>
+ <div class="hint glass" aria-hidden="true">Scroll to zoom · drag to move · double-click to reset</div>
+</div>
+
+<!-- access code (encrypted data only) -->
+<div class="modal" id="accessBox" hidden data-esc="no">
+ <div class="box">
+  <h2>Access code</h2>
+  <p>This audit is private. Enter the access code you received.</p>
+  <form id="accessForm" autocomplete="off" novalidate>
+   <label class="fl">Access code<input id="aCode" class="codein" maxlength="200" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="xxxx-xxxx-xxxx-…"></label>
+   <label class="check"><input type="checkbox" id="aRemember" checked> Remember on this computer</label>
+   <div id="aErr" class="ferr" role="alert" hidden></div>
+   <div class="row"><button type="submit" class="primary" id="aGo">Open</button></div>
+  </form>
+ </div>
+</div>
+
+<!-- session -->
+<div class="modal" id="sessBox" hidden data-esc="no">
+ <div class="box">
+  <h2>Who is rating?</h2>
+  <p>Your annotations are saved in this browser under your name. To continue later, open this page again and type the <b>same name</b>.</p>
+  <form id="sessForm" autocomplete="off" novalidate>
+   <label class="fl">Full name<input id="sName" maxlength="80" placeholder="First and last name" spellcheck="false"></label>
+   <div class="frow">
+    <label class="fl">Role<select id="sRole"><option value="">Choose…</option></select></label>
+    <label class="fl">Years of experience<input id="sYears" type="number" min="0" max="70" step="1" inputmode="numeric" placeholder="e.g. 5"></label>
+   </div>
+   <div id="sFound" class="found" hidden></div>
+   <div id="sSaved" class="saved" hidden></div>
+   <div id="sErr" class="ferr" hidden></div>
+   <div class="row"><button type="button" id="sLock" class="linkbtn" hidden title="Forget the access code on this computer; the page then asks for it again">Lock / forget code</button><button type="button" id="sCancel" hidden>Cancel</button><button type="submit" class="primary" id="sGo">Start</button></div>
+  </form>
+ </div>
+</div>
+
+<!-- welcome (first visit) -->
+<div class="modal" id="welcomeBox" hidden data-esc="no">
+ <div class="box wide">
+  <h2>Welcome to the image–description audit</h2>
+  <p class="lead" id="wIntro"></p>
+  <h3>The 7 questions</h3>
+  <ol class="wq" id="wQuestions"></ol>
+  <h3>Working through the cases</h3>
+  <p>Answer with the mouse or the number keys: <kbd>1</kbd>–<kbd>7</kbd> answer the highlighted question and move on, <kbd>↑</kbd> <kbd>↓</kbd> change the question, <kbd>←</kbd> <kbd>→</kbd> change the case, <kbd>Space</kbd> plays the audio, <kbd>?</kbd> lists all keys. A complete case opens the next one by itself. <b>Guide</b>, at the top, has the full rubric.</p>
+  <p id="wStore"></p>
+  <div class="row"><button type="button" class="primary" id="wOk">Start rating</button></div>
+ </div>
+</div>
+
+<!-- guide -->
+<div class="modal" id="guideBox" hidden>
+ <div class="box wide">
+  <h2>Guide</h2>
+  <p class="lead" id="gIntro"></p>
+  <ul class="notes" id="gNotes"></ul>
+  <h3>The rubric</h3>
+  <div id="gRubric" class="rubric"></div>
+  <h3>Saving and sending your work</h3>
+  <p>Every answer is saved automatically in this browser<span id="gServer" hidden> (and on this computer's audit server, because the page was opened through <code>serve.py</code>)</span>. You can close the page and continue later in the same browser by typing the same name. When you finish, or at the end of each sitting, click <b>Export JSON</b> and send the downloaded file to the study team. <b>Load annotations</b> merges a file exported earlier (for example, to move to another computer); for each case the newer annotation wins.</p>
+  <p>Please do not share, copy or upload the images or texts.</p>
+  <div class="row"><button type="button" class="primary" id="gOk">Close</button></div>
+ </div>
+</div>
+
+<!-- keyboard shortcuts -->
+<div class="modal" id="keysBox" hidden>
+ <div class="box">
+  <h2>Keyboard shortcuts</h2>
+  <table class="keys">
+   <tr><td><kbd>1</kbd>–<kbd>7</kbd></td><td>Answer the highlighted question, then move to the next one</td></tr>
+   <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>Previous / next question</td></tr>
+   <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Previous / next case</td></tr>
+   <tr><td><kbd>N</kbd></td><td>Next case still to do</td></tr>
+   <tr><td><kbd>Space</kbd></td><td>Play / pause the narration audio</td></tr>
+   <tr><td><kbd>S</kbd></td><td>Audio speed: 1× → 1.5× → 2×</td></tr>
+   <tr><td><kbd>T</kbd></td><td>Transcript: English translation ↔ original language</td></tr>
+   <tr><td><kbd>E</kbd></td><td>Write a note (<kbd>Esc</kbd> leaves the note box)</td></tr>
+   <tr><td><kbd>F</kbd></td><td>Full-size image (<kbd>Esc</kbd> closes)</td></tr>
+   <tr><td><kbd>+</kbd> <kbd>−</kbd> / <kbd>R</kbd> <kbd>0</kbd></td><td>Zoom in / out · reset the view</td></tr>
+   <tr><td><kbd>G</kbd> · <kbd>?</kbd></td><td>Guide · this list</td></tr>
+   <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Export JSON (the file to send back)</td></tr>
+  </table>
+  <p class="muted">Keys do nothing while you type in the note box. A complete case opens the next case still to do; use <kbd>←</kbd> to go back.</p>
+  <div class="row"><button type="button" class="primary" id="kOk">Close</button></div>
+ </div>
+</div>
+
+<!-- generic message / question -->
+<div class="modal top2" id="askBox" hidden>
+ <div class="box">
+  <h2 id="askTitle"></h2>
+  <div id="askBody" class="askbody"></div>
+  <div class="row" id="askRow"></div>
+ </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+<input type="file" id="loadFile" accept=".json,.csv,.xlsx,application/json,text/csv" hidden>
+
+<script src="config.js"></script>
+<script src="guidelines.js"></script>
+<script src="vendor/xlsx.full.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

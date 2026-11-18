@@ -1,0 +1,28 @@
+# Plaintext study data must never be committed. Only the encrypted files in web/data/
+# (meta.json, manifest.bin, images/*.bin, audio/*.bin) belong in this repository.
+web/data/**/*.jpg
+web/data/**/*.jpeg
+web/data/**/*.png
+web/data/**/*.mp3
+web/data/**/*.wav
+web/data/manifest.js
+web/data/manifest.json
+
+# Annotations, exports and access codes belong to the study team, never to the repository.
+results/
+*.xlsx
+*.csv
+*_audit_*.json
+*access_code*
+
+# Generated
+__pycache__/
+*.pyc
+node_modules/
+tests/out/
+tests/tmp/
+
+# OS clutter
+.DS_Store
+Thumbs.db
+desktop.ini
