@@ -644,13 +644,11 @@
   $("sCancel").onclick = () => closeSession(null);
   $("sessForm").addEventListener("submit", (e) => {
     e.preventDefault();
-    const name = cleanName($("sName").value), role = $("sRole").value, ys = $("sYears").value.trim(), y = Number(ys);
+    const name = cleanName($("sName").value);     // like Retify: the rater's name is the only identity asked for
     const bad = (msg, f) => { $("sErr").textContent = msg; $("sErr").hidden = false; f.focus(); };
-    if (name.split(" ").length < 2 || name.length < 3) return bad("Please enter your full name (first and last name).", $("sName"));
+    if (name.length < 2) return bad("Please enter your name.", $("sName"));
     if (!/[a-z0-9]/i.test(name)) return bad("Please type your name in Latin letters (a–z), for example as in your e-mail address.", $("sName"));
-    if (!role) return bad("Please choose your role.", $("sRole"));
-    if (ys === "" || !Number.isFinite(y) || y < 0 || y > 70) return bad("Please enter your years of experience (a number from 0 to 70).", $("sYears"));
-    closeSession({ name, role, years_experience: Math.round(y) });
+    closeSession({ name, role: "", years_experience: null });
   });
 
   async function startSession(rater) {
@@ -743,7 +741,7 @@
     $("who").hidden = !r;
     if (!r) return;
     $("whoName").textContent = r.name;
-    $("who").title = "Rater: " + r.name + " · " + roleLabel(r.role) + " · " + r.years_experience + " years of experience · file names use “" + slug + "”";
+    $("who").title = "Rater: " + r.name + " · file names use “" + slug + "”";
   }
   function enableButtons(on) { for (const id of ["loadBtn", "expJson", "expCsv", "expXlsx", "prevBtn", "nextBtn", "todoBtn"]) $(id).disabled = !on; }
   $("switchBtn").onclick = async () => { const r = await openSession(true); if (r) await startSession(r); };

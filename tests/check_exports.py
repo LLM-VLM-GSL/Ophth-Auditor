@@ -114,8 +114,8 @@ def main():
         check("JSON exported_at ISO-8601", iso_ok(d["exported_at"]), d["exported_at"])
         r = d["rater"]
         check("JSON rater keys", list(r.keys()) == ["name", "role", "years_experience"], list(r.keys()))
-        check("JSON rater role is a known role", r["role"] in ROLES, r["role"])
-        check("JSON years_experience is a number", isinstance(r["years_experience"], (int, float)) and not isinstance(r["years_experience"], bool), r["years_experience"])
+        check("JSON rater role is empty or a known role", r["role"] in ROLES or r["role"] == "", r["role"])
+        check("JSON years_experience is empty or a number", r["years_experience"] is None or (isinstance(r["years_experience"], (int, float)) and not isinstance(r["years_experience"], bool)), r["years_experience"])
         check("file-name slug == slugify(rater.name) (Python rule)", slug == slugify(r["name"]), (slug, slugify(r["name"])))
         ann = d["annotations"]
         if ids is not None:
@@ -178,8 +178,9 @@ def main():
         check("XLSX file-name slug == slugify(rater name)", slug == slugify(kv.get("name", "")), (slug, kv.get("name")))
         check("XLSX rubric_version / exported_at", kv.get("rubric_version") == "rubric-v1" and iso_ok(kv.get("exported_at")), kv)
         if exp:
-            check("XLSX rater as expected", kv.get("name") == exp["rater"]["name"] and kv.get("role") == exp["rater"]["role"]
-                  and float(kv.get("years_experience")) == exp["rater"]["years_experience"], kv)
+            ye, want_y = str(kv.get("years_experience") or "").strip(), exp["rater"]["years_experience"]
+            check("XLSX rater as expected", kv.get("name") == exp["rater"]["name"] and (kv.get("role") or "") == exp["rater"]["role"]
+                  and ((want_y is None and ye in ("", "nan", "None")) or (want_y is not None and ye and float(ye) == want_y)), kv)
             for cid, want in exp["answers"].items():
                 row = df[df["case_id"] == cid].iloc[0]
                 got = {k: row[k] for k in want}

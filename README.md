@@ -6,14 +6,14 @@ Raters answer a 7-question rubric with the keyboard or the mouse; their answers 
 they export a file at the end of each sitting. There is no server and no account.
 
 The audit cases (images, descriptions, narration transcripts and audio) are in `web/data/` (`manifest.js`,
-`images/`, `audio/`). Raters identify themselves by name, role and years of experience when they start; their
+`images/`, `audio/`). Raters identify themselves by name when they start, as in Retify; their
 answers are stored per rater.
 
 ## For raters
 
 1. **Open https://llm-vlm-gsl.github.io/Ophth-Auditor/** in Chrome or Edge, not in a private window (it would forget
    your answers).
-2. **Enter your full name**, your role and your years of experience. Your answers are saved in this browser under
+2. **Enter your name.** Your answers are saved in this browser under
    that name: to continue later, open the page again on the same computer and browser and type the same name.
 3. **Answer the 7 questions** of each case. **Guide** (top right) has the full rubric and `?` lists the keyboard
    shortcuts: `1`–`7` answer the highlighted question, `←` `→` change the case, `Space` plays the audio, `F` shows

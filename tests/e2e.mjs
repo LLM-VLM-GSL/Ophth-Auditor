@@ -212,8 +212,9 @@ async function plain() {
   check("media path rule: data/... is re-rooted on ?data=", (await js(`AUDIT_APP.mediaUrl("data/images/T001.jpg")`)) === "../tests/fixture/data/images/T001.jpg");
   check("access code normalization: lowercase, [a-z0-9] only", (await js(`AUDIT_APP.normCode(" AbC-12 x_Y ")`)) === "abc12xy");
 
-  await js(`(()=>{document.getElementById("sName").value="Jane";document.getElementById("sGo").click()})()`);
-  check("a one-word name is refused", (await js(`document.getElementById("sErr").textContent`)).includes("full name"));
+  await js(`(()=>{document.getElementById("sName").value=" ";document.getElementById("sGo").click()})()`);
+  check("an empty name is refused", (await js(`document.getElementById("sErr").textContent`)).includes("enter your name"));
+  check("only the name is asked (no role, no years)", await js(`document.getElementById("sRole").closest(".frow").hidden`));
   check("no Lock button without encrypted data", await js(`document.getElementById("sLock").hidden`));
   await startSession("Dr. Jane O'Neil", "ophthalmologist", 7, true);
   check("session on, slug per the rule", (await js(`AUDIT_APP.state.slug`)) === "dr-jane-o-neil");
@@ -340,7 +341,6 @@ async function plain() {
   check("unload warning when answers were not exported", dialogs.slice(dBefore).includes("beforeunload"), dialogs);
   check("same browser: the last name is prefilled", (await js(`document.getElementById("sName").value`)) === "Dr. Jane O'Neil");
   check("…and its saved work is found", (await js(`document.getElementById("sFound").textContent`)).includes("3 of 6 cases complete"), await js(`document.getElementById("sFound").textContent`));
-  check("…role and years filled from the saved session", (await js(`document.getElementById("sRole").value`)) === "ophthalmologist" && (await js(`document.getElementById("sYears").value`)) === "7");
   await js(`document.getElementById("sGo").click()`); await sleep(600);
   check("resumed: no welcome, 3 / 6, at the first case still to do", (await js(`document.getElementById("welcomeBox").hidden`)) && (await js(`document.getElementById("pDone").textContent`)) === "3 / 6" && (await js(`AUDIT_APP.state.id`)) === "T004");
   check("answers and notes survived the reload", answers(await ann("T002")) === "yes,multi,partial,none,cant_judge,minor,yes" && (await ann("T002")).note === "Name 123 " && (await ann("T004")).note.startsWith("5, "));
@@ -352,7 +352,7 @@ async function plain() {
   const files = await waitDownloads(3);
   check("JSON, CSV and XLSX downloaded as ophth_audit_<slug>_<stamp>", ["json", "csv", "xlsx"].every((e) => files.some((f) => f.endsWith("." + e))), files);
   check("status says exported", (await js(`document.getElementById("save").textContent`)).includes("exported"), await js(`document.getElementById("save").textContent`));
-  const expected = { manifest_version: "fixture-v1", rater: { name: "Dr. Jane O'Neil", role: "ophthalmologist", years_experience: 7 },
+  const expected = { manifest_version: "fixture-v1", rater: { name: "Dr. Jane O'Neil", role: "", years_experience: null },
     answers: {
       T001: { q1_ophthalmic: "yes", q2_modality: "oct", q3_crop: "good", q4_image_text: "full", q5_faithful: "partial", q6_clinical: "correct", q7_pii: "no", note: "" },
       T002: { q1_ophthalmic: "yes", q2_modality: "multi", q3_crop: "partial", q4_image_text: "none", q5_faithful: "cant_judge", q6_clinical: "minor", q7_pii: "yes", note: "Name 123 " },
@@ -500,7 +500,7 @@ async function encrypted() {
   await js(`document.getElementById("expXlsx").click()`);
   const files = await waitDownloads(3);
   check("JSON, CSV and XLSX downloaded", ["json", "csv", "xlsx"].every((e) => files.some((f) => f.endsWith("." + e))), files);
-  checkExports({ manifest_version: "fixture-v1", rater: { name: "Enc Tester", role: "researcher", years_experience: 2 },
+  checkExports({ manifest_version: "fixture-v1", rater: { name: "Enc Tester", role: "", years_experience: null },
     answers: {
       T001: { q1_ophthalmic: "yes", q2_modality: "oct", q3_crop: "good", q4_image_text: "full", q5_faithful: "partial", q6_clinical: "correct", q7_pii: "no", note: "" },
       T002: { q1_ophthalmic: "no", q2_modality: "na", q3_crop: "na", q4_image_text: "na", q5_faithful: "na", q6_clinical: "na", q7_pii: "no" },
