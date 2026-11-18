@@ -163,11 +163,18 @@
     } catch (e) { throw new WrongKey("the file " + rel + " does not match the access code (damaged or replaced)"); }
   }
   async function getBin(rel, fresh) {               // fresh: revalidate (the case list); media: ?v=<build> skips stale copies
-    let r;
-    try { r = await fetch(DATA + "/" + rel + (fresh ? "" : "?v=" + encodeURIComponent(enc.v)), { cache: fresh ? "no-cache" : "default" }); }
-    catch (e) { throw new Error("no connection to the site"); }
-    if (!r.ok) throw new Error("HTTP " + r.status + " for " + rel);
-    return r.arrayBuffer();
+    const url = DATA + "/" + rel + (fresh ? "" : "?v=" + encodeURIComponent(enc.v));
+    let last = null;
+    for (let attempt = 0; attempt < 4; attempt++) {  // GitHub Pages can answer 5xx or 429 for a moment: retry quietly
+      if (attempt) await new Promise((res) => setTimeout(res, 400 * attempt * attempt));
+      let r;
+      try { r = await fetch(url, { cache: fresh ? "no-cache" : "default" }); }
+      catch (e) { last = new Error("no connection to the site"); continue; }
+      if (r.ok) return r.arrayBuffer();
+      last = new Error("HTTP " + r.status + " for " + rel);
+      if (r.status < 500 && r.status !== 429) break;   // 404 and other client errors: retrying would not help
+    }
+    throw last;
   }
   // Remembered keys: the derived key (raw, base64) in localStorage under "ophth-audit:key:<dataset>:<salt>", so that
   // neither the code nor the slow key derivation is needed again on this computer. A data folder rebuilt with the
