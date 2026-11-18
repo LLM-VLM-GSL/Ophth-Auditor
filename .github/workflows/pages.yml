@@ -45,10 +45,13 @@ jobs:
           fi
 
       - name: The page code parses
-        run: for f in web/*.js; do node --check "$f"; done
+        run: |
+          for f in web/*.js; do node --check "$f"; done
 
       - name: The public site never talks to a server
-        run: grep -Eq 'server:[[:space:]]*false' web/config.js || { echo "::error::web/config.js must set server: false"; exit 1; }
+        run: |
+          grep -Eq 'server:[[:space:]]*false' web/config.js \
+            || { echo "::error::web/config.js must set server to false"; exit 1; }
 
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -1,0 +1,7 @@
+# Encrypted study data and media are binary: git must never change a byte of them.
+*.bin binary
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.mp3 binary
+*.wav binary
