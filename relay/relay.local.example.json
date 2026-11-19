@@ -1,0 +1,10 @@
+{
+  "manifest_url": "https://<owner>.github.io/<repository>/data/manifest.js",
+  "guidelines_url": "https://<owner>.github.io/<repository>/guidelines.js",
+  "data_dir": "~/ophth-audit-annotations",
+  "host": "127.0.0.1",
+  "port": 8097,
+  "prefix": "/api/ophth-audit",
+  "origins": ["https://<owner>.github.io"],
+  "hf": {"repo": "<owner>/<private dataset>", "token_env": "AUDIT_HF_TOKEN", "token_file": "~/.config/ophth-audit/hf-token", "every_minutes": 5}
+}

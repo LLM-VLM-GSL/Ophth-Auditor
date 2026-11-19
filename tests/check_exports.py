@@ -5,8 +5,10 @@
 
 Independent of the page: the option codes are the rubric table, not guidelines.js. Reads the files the way an
 analysis script would (json, pandas.read_csv with dtype=str, pandas.read_excel). Exit status 1 on any failed check.
---expect: {"manifest_version": ..., "rater": {...}, "answers": {case_id: {field: value, ...}}, "timed": [case_id]},
-written by tests/e2e.mjs. Needs pandas and openpyxl.
+--expect: {"manifest_version": ..., "rater": {...}, "answers": {case_id: {field: value, ...}}, "timed": [case_id],
+"ai": {case_id: {question: code}}, "ai_model": ...}, written by tests/e2e.mjs. Needs pandas and openpyxl.
+With AI pre-filled answers every record also has "ai" ({question: the AI's code}) and "ai_model" after the usual
+fields, and CSV / XLSX the columns ai_q1_ophthalmic .. ai_q7_pii, ai_model after the usual columns.
 """
 import argparse
 import datetime
@@ -31,6 +33,7 @@ CODES = {  # the rubric (rubric-v1)
 SKIPPABLE = QIDS[1:6]
 COLS = ["no", "case_id"] + QIDS + ["note", "annotated_at", "time_spent_s"]
 REC_FIELDS = QIDS + ["note", "annotated_at", "time_spent_s"]
+AI_COLS = ["ai_" + q for q in QIDS] + ["ai_model"]
 TOP = ["tool", "tool_version", "rubric_version", "manifest_version", "exported_at", "rater", "annotations"]
 RATER_ROWS = ["name", "role", "years_experience", "manifest_version", "rubric_version", "exported_at"]
 ROLES = {"ophthalmologist", "optometrist", "resident_fellow", "trained_grader", "researcher", "other", "llm"}
@@ -84,6 +87,18 @@ def check_record(cid, r, where):
     return ok
 
 
+def check_ai(cid, ai, where):
+    """The AI's answers of one record: rubric codes ("na" only for q2-q6, and then all of them), or all empty."""
+    ok = True
+    for q in QIDS:
+        allowed = CODES[q] | ({"na"} if q in SKIPPABLE else set()) | {""}
+        if ai.get(q, "") not in allowed:
+            ok = check("%s %s ai %s is a rubric code" % (where, cid, q), False, ai.get(q))
+    if ai.get("q1_ophthalmic") == "no" and not all(ai.get(q) == "na" for q in SKIPPABLE):
+        ok = check("%s %s ai skip logic" % (where, cid), False, ai)
+    return ok
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("folder")
@@ -121,8 +136,9 @@ def main():
         if ids is not None:
             check("JSON annotations: one entry per manifest case, in manifest order", list(ann.keys()) == ids, len(ann))
         allok = True
+        with_ai = any("ai" in rec for rec in ann.values())
         for cid, rec in ann.items():
-            if list(rec.keys()) != REC_FIELDS:
+            if list(rec.keys()) != REC_FIELDS + (["ai", "ai_model"] if with_ai else []):
                 allok = check("JSON %s fields" % cid, False, list(rec.keys()))
                 continue
             if not isinstance(rec["time_spent_s"], (int, float)) or rec["time_spent_s"] < 0:
@@ -130,6 +146,8 @@ def main():
             if not all(isinstance(rec[k], str) for k in QIDS + ["note", "annotated_at"]):
                 allok = check("JSON %s string fields" % cid, False, rec)
             allok &= bool(check_record(cid, rec, "JSON"))
+            if with_ai:
+                allok &= isinstance(rec["ai"], dict) and list(rec["ai"]) == QIDS and isinstance(rec["ai_model"], str) and bool(check_ai(cid, rec["ai"], "JSON"))
         check("JSON every annotation has the expected fields, codes and skip logic", allok)
         if exp:
             check("JSON manifest_version as expected", d["manifest_version"] == exp["manifest_version"], d["manifest_version"])
@@ -137,6 +155,9 @@ def main():
             for cid, want in exp["answers"].items():
                 got = {k: ann[cid][k] for k in want}
                 check("JSON %s answers as expected" % cid, got == want, got if got != want else None)
+            for cid, want in (exp.get("ai") or {}).items():
+                check("JSON %s ai (the AI's answers the case showed) as expected" % cid, ann[cid].get("ai") == want, ann[cid].get("ai"))
+                check("JSON %s ai_model as expected" % cid, ann[cid].get("ai_model") == exp.get("ai_model"), ann[cid].get("ai_model"))
             for cid in exp.get("timed", []):
                 check("JSON %s time_spent_s > 0" % cid, ann[cid]["time_spent_s"] > 0, ann[cid]["time_spent_s"])
                 check("JSON %s annotated_at set" % cid, iso_ok(ann[cid]["annotated_at"]), ann[cid]["annotated_at"])
@@ -146,7 +167,7 @@ def main():
         raw = open(p, "rb").read()
         check("CSV is UTF-8 without BOM", not raw.startswith(b"\xef\xbb\xbf"))
         df = pd.read_csv(p, dtype=str, keep_default_na=False)
-        check("CSV columns exactly as documented", list(df.columns) == COLS, list(df.columns))
+        check("CSV columns exactly as documented", list(df.columns) in (COLS, COLS + AI_COLS), list(df.columns))
         if ids is not None:
             check("CSV one row per case, in order", list(df["case_id"]) == ids, len(df))
             check("CSV no = 1..N", list(df["no"]) == [str(k + 1) for k in range(len(ids))])
@@ -157,6 +178,8 @@ def main():
                 for k in QIDS + ["note", "annotated_at"]:
                     if row[k] != rec[k]:
                         same = check("CSV %s %s equals JSON" % (row["case_id"], k), False, (row[k], rec[k]))
+                if "ai" in rec and (list(df.columns) != COLS + AI_COLS or [row["ai_" + q] for q in QIDS] + [row["ai_model"]] != [rec["ai"][q] for q in QIDS] + [rec["ai_model"]]):
+                    same = check("CSV %s ai columns equal the JSON" % row["case_id"], False, rec["ai"])
                 if abs(float(row["time_spent_s"]) - rec["time_spent_s"]) > 60:
                     same = check("CSV %s time close to JSON" % row["case_id"], False, (row["time_spent_s"], rec["time_spent_s"]))
             check("CSV answers and notes equal the JSON export", same)
@@ -168,7 +191,7 @@ def main():
         sheets = pd.read_excel(p, sheet_name=None, dtype=str, keep_default_na=False)
         check("XLSX sheets: annotations first, rater second", list(sheets.keys())[:2] == ["annotations", "rater"], list(sheets.keys()))
         df = sheets["annotations"]
-        check("XLSX annotation columns exactly as documented", list(df.columns) == COLS, list(df.columns))
+        check("XLSX annotation columns exactly as documented", list(df.columns) in (COLS, COLS + AI_COLS), list(df.columns))
         if ids is not None:
             check("XLSX one row per case, in order", list(df["case_id"]) == ids, len(df))
         rs = sheets["rater"]
@@ -185,10 +208,16 @@ def main():
                 row = df[df["case_id"] == cid].iloc[0]
                 got = {k: row[k] for k in want}
                 check("XLSX %s answers as expected" % cid, got == want, got if got != want else None)
+            for cid, want in (exp.get("ai") or {}).items():
+                row = df[df["case_id"] == cid].iloc[0]
+                got = {q: row["ai_" + q] for q in QIDS} if "ai_model" in df.columns else None
+                check("XLSX %s ai columns as expected" % cid, got == want and row["ai_model"] == exp.get("ai_model"), got)
         dn = pd.read_excel(p, sheet_name="annotations")    # numbers stay numbers for a typed reader
         check("XLSX no and time_spent_s are numeric cells", pd.api.types.is_numeric_dtype(dn["no"]) and pd.api.types.is_numeric_dtype(dn["time_spent_s"]))
         for _, row in df.iterrows():
             check_record(row["case_id"], row, "XLSX")
+            if "ai_model" in df.columns:
+                check_ai(row["case_id"], {q: row["ai_" + q] for q in QIDS}, "XLSX")
 
     print("\n%s: %d failed check(s)" % ("FAILED" if failed else "ALL OK", failed))
     sys.exit(1 if failed else 0)

@@ -15,9 +15,21 @@
  *   false: the page never calls api/* (static hosting).
  * - Answers are autosaved in localStorage under "ophth-audit:ann:<manifest_version>:<rater-slug>" and leave the
  *   browser as files the reviewer downloads (Download annotations: JSON, CSV or Excel).
+ * - With a relay (config.js relay: "<absolute URL>", or ?relay=<url>; relay/relay.py in the repository), as in Retify:
+ *   the reviewer finds or creates a session by name on the relay, every annotation is sent to it as it is made
+ *   (an outbox in localStorage, retried with back-off and when the browser is online again), the relay's and the
+ *   browser's annotations are merged on entering (the later annotated_at wins), and a strip under the top bar shows
+ *   everyone's progress. The session is "ophth-audit:session"; its annotations "ophth-audit:relay:<mv>:<session id>",
+ *   its outbox "ophth-audit:outbox:<mv>:<session id>". Download annotations works the same in both modes.
  * Reviewer-facing behaviour follows the lab's Retify page (its AGENTS.md, section 5): the eye at the top left is the
  * bright / dark switch, the task is the headline, How to stands out, "annotations" and "download" in plain words,
  * a short welcome for someone new, the image as a small canvas, the queue below the case on narrow screens.
+ * - AI pre-filled answers (optional, plaintext data only): <data>/ai_prefill.js (window.AUDIT_AI, written by
+ *   tools/build_ai_prefill.py), loaded with a <script> tag after the case list. Every question the reviewer has not
+ *   answered shows the AI's answer, marked as the AI's; the reviewer changes answers as usual, and Enter / Confirm
+ *   keeps the AI's answers that are left. A case is complete only once every answer is the reviewer's. Each case's
+ *   annotation keeps the AI's answers it was shown ("ai": {question: code}, "ai_model"), so that the analysis can tell
+ *   a kept AI answer (answer == ai) from a changed one. Without the file the page behaves as before.
  * - Nothing is requested from other origins: no CDN, no fonts, no analytics.
  * Interaction patterns, the image viewer and the CSV reader are adapted from an earlier MIT-licensed annotation
  * tool by the same authors.
@@ -28,10 +40,17 @@
   const G = window.AUDIT_GUIDELINES;
   const CFG = window.AUDIT_CONFIG && typeof window.AUDIT_CONFIG === "object" ? window.AUDIT_CONFIG : {};
   const SERVER_API = CFG.server !== false;         // config.js server: false -> never call api/* (static site)
+  // the lab's relay: an absolute http(s) URL, from ?relay= or config.js; empty: annotations stay in this browser
+  const RELAY = (() => {
+    const u = String(new URLSearchParams(location.search).get("relay") || CFG.relay || "").trim().replace(/\/+$/, "");
+    return /^https?:\/\/[^/]/i.test(u) ? u : "";
+  })();
   const TOOL = "ophth-audit", TOOL_VERSION = "1.0";
   // Question ids and export columns, in SPEC order (guidelines.js is checked against this at start).
   const QIDS = ["q1_ophthalmic", "q2_modality", "q3_crop", "q4_image_text", "q5_faithful", "q6_clinical", "q7_pii"];
   const COLS = ["no", "case_id", ...QIDS, "note", "annotated_at", "time_spent_s"];
+  // with AI pre-filled answers: the AI's answer per question and the model, after the columns above
+  const AI_COLS = [...QIDS.map((q) => "ai_" + q), "ai_model"];
   const LS = "ophth-audit:";              // prefix of every localStorage key of this page
   const IDLE_MS = 3 * 60 * 1000;          // no key, mouse or wheel for this long (and no audio playing): the clock stops
   const NOTE_MAX = 2000;
@@ -254,7 +273,20 @@
     const t = Number(raw.time_spent_s);
     a.time_spent_s = Number.isFinite(t) && t > 0 ? t : 0;
     applySkip(a);
+    const ai = aiCodes(raw.ai);
+    if (ai) { a.ai = ai; a.ai_model = typeof raw.ai_model === "string" ? raw.ai_model.trim().slice(0, 200) : ""; }
     return a;
+  }
+  // The AI's answers of one case ({question: code}): known codes, "na" where skip logic allows it; null when none
+  function aiCodes(raw) {
+    if (!raw || typeof raw !== "object") return null;
+    const s = {};
+    for (const q of G.questions) {
+      const v = raw[q.id] == null ? "" : String(raw[q.id]).trim().toLowerCase();
+      s[q.id] = OPT[q.id][v] || (v === "na" && q.skip_if) ? v : "";
+    }
+    applySkip(s);
+    return QIDS.some((q) => s[q]) ? s : null;
   }
 
   // ---------------------------------------------------------------- state
@@ -263,7 +295,40 @@
   let cur = 0, active = 0, filt = "all", shown = "", localOk = true, savedAt = 0;
   const keyFor = (sl, mv) => LS + "ann:" + (mv || M.manifest_version) + ":" + sl;
   const curRec = () => (session && cases[cur] ? ann[cases[cur].id] : undefined);
-  function ensureRec(id) { return ann[id] || (ann[id] = blank()); }
+  function ensureRec(id) {                          // a case the reviewer works on keeps the AI's answers it shows
+    const a = ann[id] || (ann[id] = blank());
+    if (!a.ai && AI && AI.answers[id]) {
+      a.ai = {};
+      for (const q of QIDS) a.ai[q] = AI.answers[id][q] || "";
+      a.ai_model = AI.model;
+    }
+    return a;
+  }
+
+  // ---------------------------------------------------------------- AI pre-filled answers (<data>/ai_prefill.js)
+  let AI = null;                                    // {model, runs, answers: {case_id: {question: code, agree, note}}}
+  function takeAi(x) {
+    if (!x || typeof x !== "object" || x.manifest_version !== M.manifest_version || !x.answers || typeof x.answers !== "object") return null;
+    const answers = {};
+    for (const id of Object.keys(x.answers)) {
+      const r = x.answers[id], s = byId.has(id) ? aiCodes(r) : null;
+      if (!s) continue;
+      s.agree = r.agree && typeof r.agree === "object" ? r.agree : {};
+      s.note = String(r.note || "").trim().slice(0, NOTE_MAX);
+      answers[id] = s;
+    }
+    if (!Object.keys(answers).length) return null;
+    return { model: String(x.model || "an AI model").slice(0, 200), runs: Number(x.runs) || 0, answers };
+  }
+  // the AI's answers this case shows: the ones kept in its annotation, else those of ai_prefill.js
+  function aiOf(id) { const a = ann[id]; return (a && a.ai) || (AI && AI.answers[id]) || null; }
+  const hasAi = () => !!AI || cases.some((c) => ann[c.id] && ann[c.id].ai);
+  function shownView(id) {                          // what the case shows: the reviewer's answer, else the AI's
+    const a = ann[id], s = aiOf(id), v = {};
+    for (const q of QIDS) v[q] = (a && a[q]) || (s && s[q]) || "";
+    applySkip(v);
+    return v;
+  }
   function status(id) {
     const a = ann[id];
     if (isComplete(a)) return hasIssue(a) ? "flag" : "done";
@@ -293,6 +358,7 @@
     localOk = lsSet(storeKey, JSON.stringify(record));
     savedAt = Date.now();
     if (server.on && toServer !== false) { server.dirty = true; schedulePut(1500); }
+    if (me) queue();
     showSave();
   }
   function changed() {                              // an answer or a note changed
@@ -305,6 +371,16 @@
     const s = $("save");
     const set = (t, cls, title) => { s.textContent = t; s.className = "save" + (cls ? " " + cls : ""); s.title = title || t; };
     if (!session) return set(M ? "Not started" : "Loading…", "warn");
+    if (me) {                                       // the lab's relay: what matters is whether the lab has them
+      const n = obx.length;
+      if (n && rl.fails) return set("Not yet saved (" + n + " waiting)", "err",
+        "No connection to the lab right now. Your annotations are kept in this browser and sent as soon as the connection is back; keep this page open.");
+      if (n || rl.sending) return set("Saving…");
+      if (rl.offline) return set("Not yet saved to the lab — no connection", "err",
+        "Your annotations are kept on this computer and saved to the lab when the connection is back.");
+      const t = new Date(rl.savedAt || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      return set("Saved to the lab · " + t, "", "Every annotation is saved to the lab as you make it; you can continue on any computer under your name.");
+    }
     if (!localOk) return set("Not saved — download your annotations before closing", "err",
       "This browser refused to keep the annotations (a private window, or the storage is full). Download your annotations often.");
     const t = new Date(savedAt || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
@@ -365,6 +441,224 @@
     } catch (e) { /* the copy in this browser is there */ }
   }
 
+  // ---------------------------------------------------------------- the lab's relay (as in Retify)
+  // Sessions by name, a key per browser; every changed case goes into the outbox, which is sent in batches of 200
+  // (back-off up to a minute, and again when the browser is online); everyone's progress under the top bar.
+  let me = null;                                    // the session on the relay: {id, name, key}
+  let obx = [];                                     // the outbox: annotations the relay has not confirmed yet
+  const touched = new Set();                        // cases changed since the last save
+  const rl = { sending: false, fails: 0, wait: 2000, retry: 0, savedAt: 0, offline: false };
+  const touch = (id) => { if (me && id) touched.add(id); };
+  const outboxKey = () => LS + "outbox:" + M.manifest_version + ":" + me.id;
+  function setOutbox(o) { obx = o; lsSet(outboxKey(), JSON.stringify(o)); }
+  async function rcall(method, path, body) {
+    const r = await fetch(RELAY + path, {
+      method, cache: "no-store",
+      headers: Object.assign({ "Content-Type": "application/json" }, me ? { "X-Audit-Key": me.key } : {}),
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) { const e = new Error(j.error || "HTTP " + r.status); e.status = r.status; throw e; }
+    return j;
+  }
+  function item(id) {                               // one case as the relay takes it (the export's fields)
+    const a = ann[id], o = { case_id: id };
+    for (const q of QIDS) o[q] = a[q] || "";
+    o.note = a.note || "";
+    o.annotated_at = a.annotated_at;
+    o.time_spent_s = Math.round((Number(a.time_spent_s) || 0) * 10) / 10;
+    if (a.ai) { o.ai = Object.assign({}, a.ai); o.ai_model = a.ai_model || ""; }
+    return o;
+  }
+  function queue() {
+    if (!me || !touched.size) return;
+    const ids = [...touched].filter((id) => ann[id] && ann[id].annotated_at);
+    touched.clear();
+    if (!ids.length) return;
+    const o = obx.filter((x) => !ids.includes(x.case_id));
+    for (const id of ids) o.push(item(id));
+    setOutbox(o);
+    flush();
+  }
+  async function flush() {
+    if (rl.sending || !me) return;
+    if (!obx.length) { showSave(); return; }
+    rl.sending = true;
+    clearTimeout(rl.retry);
+    const mine = me;
+    showSave();
+    try {
+      while (obx.length && me === mine) {
+        const batch = obx.slice(0, 200);
+        await rcall("POST", "/annotations", { set: M.manifest_version, session: me.id, annotations: batch });
+        if (me !== mine) break;
+        const sent = new Map(batch.map((x) => [x.case_id, JSON.stringify(x)]));
+        setOutbox(obx.filter((x) => sent.get(x.case_id) !== JSON.stringify(x)));   // changed meanwhile: still queued
+        rl.fails = 0;
+        rl.offline = false;
+        rl.savedAt = Date.now();
+      }
+      rl.wait = 2000;
+      rl.sending = false;
+      showSave();
+      team();
+    } catch (e) {
+      rl.sending = false;
+      if (e.status === 403 && me === mine) { enter("Please type your name again."); return; }
+      rl.fails++;
+      showSave();
+      rl.retry = setTimeout(flush, rl.wait);
+      rl.wait = Math.min(rl.wait * 2, 60000);
+    }
+  }
+  addEventListener("online", () => { rl.wait = 2000; flush(); });
+
+  async function team() {                           // everyone's progress: masked names and counts, never annotations
+    if (!me) return;
+    try {
+      const p = await rcall("GET", "/progress?set=" + encodeURIComponent(M.manifest_version) + "&session=" + me.id);
+      const T = $("teamrows");
+      T.replaceChildren();
+      for (const r of p.annotators) {
+        const d = el("div", "trow" + (r.you ? " me" : ""));
+        const bar = el("div", "pbar"), fill = el("i");
+        fill.style.width = (p.cases ? (100 * r.annotated) / p.cases : 0) + "%";
+        bar.append(fill);
+        d.append(el("b", null, r.name || "Annotator " + r.annotator), el("span", null, r.annotated + " / " + p.cases), bar);
+        T.append(d);
+      }
+      if (!p.annotators.length) T.textContent = "No annotations yet.";
+      $("team").hidden = false;
+    } catch (e) { /* progress is a nicety; the annotations are what matters */ }
+  }
+  setInterval(() => { if (me && session && !document.hidden) team(); }, 15000);
+
+  // On entering: the relay's annotations of this session merged with this browser's (the later one wins); the cases
+  // newer here are queued. false: the relay does not know this browser's key (enter again by name).
+  async function sync() {
+    let got;
+    try {
+      got = (await rcall("GET", "/annotations?set=" + encodeURIComponent(M.manifest_version) + "&session=" + me.id)).annotations || {};
+    } catch (e) {
+      if (e.status === 403) return false;
+      rl.offline = true;
+      return true;                                  // offline: work from this browser; the outbox waits
+    }
+    const res = mergeIn(got);
+    touched.clear();                                // what came from the relay is not sent back
+    if (res.taken) { record.rev = (record.rev || 0) + 1; record.changed_at = isoNow(); }
+    for (const id of Object.keys(ann)) {
+      const a = ann[id], b = got[id];
+      if (!a || !a.annotated_at || !hasContent(a)) continue;
+      if (!b || tms(a.annotated_at) > tms(b.annotated_at) ||
+        (tms(a.annotated_at) === tms(b.annotated_at) && (Number(a.time_spent_s) || 0) > (Number(b.time_spent_s) || 0) + 0.05)) touched.add(id);
+    }
+    return true;
+  }
+  // Who is annotating, on the relay: the sessions sharing a word with the typed name, or a new one with the full name
+  let relayResolve = null;
+  function askRelay(why, cancelable) {
+    return new Promise((resolve) => {
+      if (relayResolve) relayResolve("cancel");
+      relayResolve = resolve;
+      const R = $("rRes");
+      R.replaceChildren();
+      if (why) R.append(el("p", "ferr", why));
+      $("rName").value = me ? me.name : "";
+      $("rCancel").hidden = !cancelable;
+      $("rFind").classList.add("primary");
+      $("rFind").hidden = false;
+      showBox("relayBox", $("rName"));
+    });
+  }
+  function closeRelay(v) {
+    $("relayBox").hidden = true;
+    if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
+    const r = relayResolve;
+    relayResolve = null;
+    if (r) r(v);
+  }
+  async function findSession(e) {
+    if (e) e.preventDefault();
+    const name = cleanName($("rName").value), R = $("rRes");
+    R.replaceChildren();
+    $("rFind").classList.add("primary");
+    if (!name) { $("rName").focus(); return; }
+    const say = (t) => R.append(el("p", null, t));
+    try {
+      const { matches } = await rcall("POST", "/sessions/find", { name });
+      if (matches.length) {
+        say("We found these sessions for “" + name + "”. Is one of them yours?");
+        for (const m of matches) {
+          const b = choice(m.name, m.annotated + " annotated", async () => {
+            try { closeRelay(await rcall("POST", "/sessions/enter", { id: m.id })); } catch (x) { say("That did not work. Please try again."); }
+          });
+          b.classList.add("primary");
+          R.append(b);
+        }
+        R.append(choice("None of these is me", "start a new session", () => newSession(name)));
+      } else {
+        newSession(name, "No session was found for “" + name + "”. Would you like to start a new session?");
+      }
+    } catch (x) {
+      say("No connection right now. Please try again, or choose Continue without saving to the lab and download your annotations when you finish.");
+    }
+  }
+  function newSession(typed, why) {                 // a new session needs the full name, first and last
+    const R = $("rRes");
+    R.replaceChildren();
+    $("rFind").classList.remove("primary");
+    const p = el("p", null, (why ? why + " " : "") + "Please enter your full name, first and last.");
+    const f = document.createElement("form");
+    f.noValidate = true;
+    const input = el("input", "field");
+    input.id = "fullname"; input.autocomplete = "name"; input.maxLength = 80; input.placeholder = "e.g., Tina Vascullensky";
+    input.setAttribute("aria-label", "Your full name");
+    const row = el("div", "row"), go = el("button", "primary", "Start a new session");
+    go.type = "submit";
+    row.append(go);
+    f.append(input, row);
+    R.append(p, f);
+    input.value = words(typed).length >= 2 ? cleanName(typed) : "";
+    input.focus();
+    f.onsubmit = async (ev) => {
+      ev.preventDefault();
+      const full = cleanName(input.value);
+      if (words(full).length < 2) { p.textContent = "Please enter your full name, first and last (e.g., Tina Vascullensky)."; input.focus(); return; }
+      try { closeRelay(await rcall("POST", "/sessions", { name: full })); } catch (x) { p.textContent = "That did not work. Please try again."; }
+    };
+  }
+  $("rForm").addEventListener("submit", findSession);
+  $("rFind").onclick = findSession;
+  $("rLocal").onclick = () => closeRelay("local");
+  $("rCancel").onclick = () => closeRelay("cancel");
+  // ask for the name, then work in that session; "Continue without saving to the lab": in this browser only, by name
+  async function enter(why) {
+    const s = await askRelay(why, !!(session && !why));
+    if (s === "cancel") return;
+    if (s && s.id) return join(s);
+    if (session) { flushNote(); saveTime(); persist(); }
+    leaveRelay();
+    lsDel(LS + "session");
+    const r = await openSession(false);
+    if (r) await startSession(r);
+  }
+  function leaveRelay() {
+    me = null;
+    obx = [];
+    touched.clear();
+    clearTimeout(rl.retry);
+    Object.assign(rl, { sending: false, fails: 0, wait: 2000, savedAt: 0, offline: false });
+    $("team").hidden = true;
+  }
+  async function join(s) {
+    if (session) { flushNote(); saveTime(); persist(); }
+    leaveRelay();
+    me = { id: s.id, name: s.name, key: s.key };
+    lsSet(LS + "session", JSON.stringify({ id: s.id, name: s.name, key: s.key, relay: RELAY }));
+    await startSession({ name: s.name, role: "", years_experience: null });
+  }
+
   // ---------------------------------------------------------------- merging (load, server copy, other tabs)
   // For each case the annotation with the later annotated_at wins; this browser keeps a tie.
   function mergeIn(src) {
@@ -377,6 +671,7 @@
       if (!hasContent(a) || tms(r.annotated_at) > tms(a.annotated_at)) {
         r.time_spent_s = Math.max(r.time_spent_s || 0, (a && a.time_spent_s) || 0);
         ann[id] = r;
+        touch(id);
         res.taken++;
       } else res.kept++;
     }
@@ -386,29 +681,36 @@
 
   // ---------------------------------------------------------------- exports (SPEC "Export contract")
   function exportObject() {
-    const out = {};
+    const out = {}, withAi = hasAi();
     for (const c of cases) {
       const a = ann[c.id] || blank(), r = {};
       for (const q of QIDS) r[q] = a[q] || "";
       r.note = a.note || "";
       r.annotated_at = a.annotated_at || "";
       r.time_spent_s = Math.round((Number(a.time_spent_s) || 0) * 10) / 10;
+      if (withAi) {                                 // the AI's answers this case showed ("" when it was never opened)
+        r.ai = {};
+        for (const q of QIDS) r.ai[q] = (a.ai && a.ai[q]) || "";
+        r.ai_model = (a.ai && a.ai_model) || "";
+      }
       out[c.id] = r;
     }
     const rt = record.rater;
     return { tool: TOOL, tool_version: TOOL_VERSION, rubric_version: G.version, manifest_version: M.manifest_version,
       exported_at: isoNow(), rater: { name: rt.name, role: rt.role, years_experience: rt.years_experience }, annotations: out };
   }
+  const withAiCols = (o) => cases.some((c) => o.annotations[c.id] && o.annotations[c.id].ai);
+  const header = (o) => (withAiCols(o) ? [...COLS, ...AI_COLS] : COLS);
   const tableRows = (o) => cases.map((c, k) => {
-    const r = o.annotations[c.id];
-    return [k + 1, c.id, ...QIDS.map((q) => r[q]), r.note, r.annotated_at, r.time_spent_s];
+    const r = o.annotations[c.id], row = [k + 1, c.id, ...QIDS.map((q) => r[q]), r.note, r.annotated_at, r.time_spent_s];
+    return withAiCols(o) ? [...row, ...QIDS.map((q) => (r.ai && r.ai[q]) || ""), r.ai_model || ""] : row;
   });
   const csvCell = (v) => { const s = v == null ? "" : String(v); return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
-  const csvText = (o) => [COLS, ...tableRows(o)].map((r) => r.map(csvCell).join(",")).join("\r\n") + "\r\n";
+  const csvText = (o) => [header(o), ...tableRows(o)].map((r) => r.map(csvCell).join(",")).join("\r\n") + "\r\n";
   function xlsxBytes(o) {
     const X = window.XLSX, wb = X.utils.book_new();
-    const ws = X.utils.aoa_to_sheet([COLS, ...tableRows(o)]);
-    ws["!cols"] = [5, 8, 13, 12, 9, 13, 12, 12, 8, 50, 26, 12].map((w) => ({ wch: w }));
+    const ws = X.utils.aoa_to_sheet([header(o), ...tableRows(o)]);
+    ws["!cols"] = [5, 8, 13, 12, 9, 13, 12, 12, 8, 50, 26, 12, 13, 12, 9, 13, 12, 12, 8, 20].map((w) => ({ wch: w }));
     X.utils.book_append_sheet(wb, ws, "annotations");
     const r = o.rater;
     const ws2 = X.utils.aoa_to_sheet([["field", "value"], ["name", r.name], ["role", r.role], ["years_experience", r.years_experience],
@@ -452,8 +754,8 @@
     const done = countDone(), left = N - done;
     $("dlSum").textContent = done + " of " + N + " cases annotated" +
       (left ? " (" + left + " still to do; you can download now and again later)." : ". Thank you!") +
-      " Please send us the JSON file" + (server.on ? "; a copy is also kept in the results folder." : ".") +
-      " Excel and CSV are copies for you.";
+      (me ? " This is a copy; your annotations are already saved to the lab."
+        : " Please send us the JSON file" + (server.on ? "; a copy is also kept in the results folder." : ".") + " Excel and CSV are copies for you.");
     openBox("dlBox", "dlJson");
   }
 
@@ -485,6 +787,12 @@
       if (!id) continue;
       const r = {};
       for (const f of [...QIDS, "note", "annotated_at", "time_spent_s"]) { const k = h.indexOf(f); if (k >= 0) r[f] = row[k]; }
+      if (h.includes("ai_" + QIDS[0])) {            // the AI's answers, after the usual columns
+        r.ai = {};
+        for (const q of QIDS) { const k = h.indexOf("ai_" + q); r.ai[q] = k >= 0 ? row[k] : ""; }
+        const k = h.indexOf("ai_model");
+        r.ai_model = k >= 0 ? String(row[k] == null ? "" : row[k]) : "";
+      }
       out[id] = r;
     }
     return out;
@@ -569,7 +877,7 @@
       showBox("askBox", focus || cancelBtn || R.lastChild);   // no primary action: the safe button has the focus
     });
   }
-  const MODALS = ["askBox", "accessBox", "sessBox", "welcomeBox", "helpBox", "dlBox"];
+  const MODALS = ["askBox", "accessBox", "relayBox", "sessBox", "welcomeBox", "helpBox", "dlBox"];
   function topModal() { for (const id of MODALS) if (!$(id).hidden) return $(id); return null; }
   function showBox(id, focusEl) {                   // open a dialog at its top, with the keyboard focus on its button
     $(id).hidden = false;
@@ -667,9 +975,12 @@
       if (server.on) await putNow();
     }
     session = false;                                // no clock, keys or saving until the copies are settled
-    const sl = slugify(rater.name), stored = peekLocal(sl);
+    const sl = slugify(rater.name);
     slug = sl;
-    storeKey = keyFor(sl);
+    // on the relay: this browser's copy of the session, apart from the browser-only annotations under the same name
+    storeKey = me ? LS + "relay:" + M.manifest_version + ":" + me.id : keyFor(sl);
+    let stored = lsJson(storeKey);
+    if (!(stored && stored.annotations && typeof stored.annotations === "object")) stored = null;
     record = Object.assign(newRecord(rater), stored || {});
     Object.assign(record, { tool: TOOL, tool_version: TOOL_VERSION, rubric_version: G.version, manifest_version: M.manifest_version, rater });
     ann = {};
@@ -679,13 +990,19 @@
     lsSet(LS + "last", JSON.stringify(rater));
     showWho();
     enableButtons(true);
-    if (server.on) await fromServer();               // a newer copy on the audit server?
+    if (me) {                                       // the relay's copy, merged; the outbox of an earlier visit
+      const o = lsJson(outboxKey());
+      obx = Array.isArray(o) ? o.filter((x) => x && byId.has(x.case_id)) : [];
+      $("team").hidden = true;
+      if (!(await sync())) return enter("Please type your name again.");
+    } else if (server.on) await fromServer();        // a newer copy on the audit server?
     else if (!stored) await fromOtherVersion();      // answers saved for an earlier case list in this browser?
     session = true;
     persist();
+    if (me) { flush(); team(); }
     const k = nextIncomplete(0), last = byId.get(record.last_case);
     cur = k >= 0 ? k : last != null ? last : 0;
-    active = firstOpen(ann[cases[cur].id]);
+    active = firstOpen(cases[cur].id);
     allDoneShown = false;
     renderCase();
     await welcome();
@@ -734,9 +1051,11 @@
   // The welcome, for someone new (Retify): once the session is known, when it has no annotations yet (a new reviewer,
   // or one who never annotated), once per name in this browser. Help otherwise only from How to.
   function welcome() {
-    const k = LS + "welcomed:" + slug;
+    const k = LS + "welcomed:" + (me ? me.id : slug);
     if (lsGet(k) === "1" || cases.some((c) => hasContent(ann[c.id]))) return Promise.resolve();
-    rich($("wStore"), server.on
+    rich($("wStore"), me
+      ? "Your annotations are saved automatically under your name, as you make them. To continue on another computer, open this page there and type the same name."
+      : server.on
       ? "Your annotations are saved automatically in this browser and in the results folder on this computer. At the end of each sitting, click **Download annotations** and send us the JSON file."
       : "Your annotations are saved automatically in this browser. To continue later, open this page again in the same browser and type the same name. At the end of each sitting, click **Download annotations** and send us the JSON file.");
     showBox("welcomeBox", $("wOk"));
@@ -758,7 +1077,11 @@
     $("who").title = "Reviewer: " + r.name;
   }
   function enableButtons(on) { for (const id of ["loadBtn", "dlBtn", "prevBtn", "nextBtn", "todoBtn"]) $(id).disabled = !on; }
-  $("switchBtn").onclick = async () => { const r = await openSession(true); if (r) await startSession(r); };
+  $("switchBtn").onclick = async () => {
+    if (RELAY) return enter();
+    const r = await openSession(true);
+    if (r) await startSession(r);
+  };
 
   // ---------------------------------------------------------------- the questions
   const qrows = [];
@@ -776,13 +1099,13 @@
       h.onclick = () => setActive(qi);
       const o = el("div", "opts");
       o.style.setProperty("--n", q.options.length);
-      if (q.options.length > 5) o.classList.add("many");   // Q2: one row, or 4 + 3 when the panel is narrow (style.css)
+      if (q.options.length > 5) { o.classList.add("many"); row.classList.add("many"); }   // Q2: one row, or 4 + 3 when the panel is narrow (style.css)
       const btns = {};
       for (const op of q.options) {
         const b = el("button", "opt" + (op.issue ? " issue" : ""));
         b.type = "button";
-        b.append(el("kbd", null, op.key), el("span", null, op.label));
-        b.title = op.label + " (key " + op.key + "): " + plain(op.help);
+        b.append(el("kbd", null, op.key), el("span", null, op.label), el("i", "aib", "AI"));
+        b.title = b.dataset.t = op.label + " (key " + op.key + "): " + plain(op.help);
         b.onclick = () => answer(qi, op.code);
         o.append(b);
         btns[op.code] = b;
@@ -792,9 +1115,9 @@
       qrows.push({ row, btns });
     });
   }
-  let defsOn = (() => { const v = lsGet(LS + "defs"); return v == null ? innerHeight >= 860 : v === "1"; })();
+  let defsOn = lsGet(LS + "defs") !== "0";         // the answer definitions under the questions, unless hidden
   function renderHelp() {
-    const H = $("qhelp"), q = G.questions[active], a = curRec(), v = a ? a[q.id] : "";
+    const H = $("qhelp"), q = G.questions[active], id = cases[cur].id, v = shownView(id)[q.id], s = aiOf(id);
     const tog = el("button", "mini tog", defsOn ? "Hide help" : "Show help");
     tog.type = "button";
     tog.title = "The help and the answer definitions of the highlighted question (also shown when you point at an answer)";
@@ -807,24 +1130,34 @@
     for (const op of q.options) {
       const li = el("li", v === op.code ? "sel" : "");
       li.append(el("kbd", null, op.key), el("b", null, op.label), rich(el("span"), op.help));
+      if (s && s[q.id] === op.code) li.append(el("i", "aib", "AI"));
       ul.append(li);
     }
     H.append(ul);
   }
   function renderQuestions() {
-    const a = curRec();
+    const id = cases[cur].id, a = curRec(), vw = shownView(id), s = aiOf(id), x = AI && AI.answers[id];
     G.questions.forEach((q, qi) => {
-      const v = (a && a[q.id]) || "", sk = skipped(q, a), r = qrows[qi];
+      const v = (a && a[q.id]) || "", sk = skipped(q, vw), r = qrows[qi];
+      const sug = !v && !sk ? vw[q.id] : "";          // the AI's answer, not confirmed yet
+      const mark = s && !sk ? s[q.id] : "";           // the AI's answer, also once the reviewer chose
       r.row.classList.toggle("skip", sk);
       r.row.classList.toggle("ok", !!v && !sk);
+      r.row.classList.toggle("sug", !!sug);
       r.row.classList.toggle("on", qi === active && !sk);
       for (const code of Object.keys(r.btns)) {
         const b = r.btns[code];
         b.classList.toggle("sel", v === code);
+        b.classList.toggle("ai", sug === code);
+        b.classList.toggle("aimark", mark === code);
         b.disabled = sk;
         b.setAttribute("aria-pressed", v === code ? "true" : "false");
+        const n = x && x.agree && Number(x.agree[q.id]);
+        b.title = b.dataset.t + (mark === code ? " · The AI's answer" + (n && AI.runs ? " (" + n + " of " + AI.runs + " runs)" : "") +
+          (v ? "" : ", not confirmed yet") : "");
       }
     });
+    renderAi();
     renderHelp();
     const on = qrows[active] && qrows[active].row, box = $("qs");
     if (on && box.scrollHeight > box.clientHeight) {
@@ -833,43 +1166,84 @@
       else if (rb.bottom > bb.bottom) box.scrollTop += rb.bottom - bb.bottom + 4;
     }
   }
-  function firstOpen(a) {
-    const k = G.questions.findIndex((q) => !skipped(q, a) && !(a && a[q.id]));
+  // Skip logic follows what the case shows (the reviewer's answers, else the AI's); "answered" means by the reviewer.
+  function firstOpen(id) {
+    const a = ann[id], v = shownView(id);
+    const k = G.questions.findIndex((q) => !skipped(q, v) && !(a && a[q.id]));
     return k < 0 ? 0 : k;
   }
-  function nextActive(qi, a) {                      // the next unanswered question after this one (wrapping), else the next one
-    const n = G.questions.length;
-    for (let d = 1; d < n; d++) { const j = (qi + d) % n, q = G.questions[j]; if (!skipped(q, a) && !a[q.id]) return j; }
-    for (let j = qi + 1; j < n; j++) if (!skipped(G.questions[j], a)) return j;
+  function nextActive(qi, id) {                     // the next unanswered question after this one (wrapping), else the next one
+    const n = G.questions.length, a = ann[id] || {}, v = shownView(id);
+    for (let d = 1; d < n; d++) { const j = (qi + d) % n, q = G.questions[j]; if (!skipped(q, v) && !a[q.id]) return j; }
+    for (let j = qi + 1; j < n; j++) if (!skipped(G.questions[j], v)) return j;
     return qi;
   }
   function setActive(qi) {
-    if (!session || skipped(G.questions[qi], curRec())) return;
+    if (!session || skipped(G.questions[qi], shownView(cases[cur].id))) return;
     active = qi;
     renderQuestions();
   }
   function moveActive(d) {
-    const a = curRec();
+    const v = shownView(cases[cur].id);
     let j = active;
-    do { j += d; } while (j >= 0 && j < G.questions.length && skipped(G.questions[j], a));
+    do { j += d; } while (j >= 0 && j < G.questions.length && skipped(G.questions[j], v));
     if (j >= 0 && j < G.questions.length) { active = j; renderQuestions(); }
   }
   function answer(qi, code) {
     if (!session) return;
-    const q = G.questions[qi], a = ensureRec(cases[cur].id);
-    if (skipped(q, a) || !OPT[q.id][code]) return;
-    const was = isComplete(a);
+    const id = cases[cur].id, q = G.questions[qi];
+    if (skipped(q, shownView(id)) || !OPT[q.id][code]) return;
+    const a = ensureRec(id), was = isComplete(a);
     a[q.id] = code;
     applySkip(a);
     a.annotated_at = isoNow();
-    active = nextActive(qi, a);
+    touch(id);
+    active = nextActive(qi, id);
     changed();
     renderQuestions(); renderState(); renderList(); renderProgress();
     if (!was && isComplete(a)) completed(a);
   }
+  // Confirm (Enter): the AI's answers the reviewer has not changed become the reviewer's; the case is then complete
+  function confirmCase() {
+    if (!session) return;
+    const id = cases[cur].id;
+    if (!aiOf(id)) return toast("This case has no AI answers: please answer the questions");
+    const v = shownView(id);
+    let a = ann[id];
+    if (isComplete(a)) return completed(a);         // confirmed already: on to the next case still to do
+    const k = G.questions.findIndex((q) => q.required && !skipped(q, v) && !v[q.id]);
+    if (k >= 0) {
+      active = k;
+      renderQuestions();
+      return toast("Question " + (k + 1) + " has no AI answer: please answer it, then confirm", false, 4000);
+    }
+    a = ensureRec(id);
+    for (const q of QIDS) if (!a[q]) a[q] = v[q];
+    applySkip(a);
+    a.annotated_at = isoNow();
+    touch(id);
+    changed();
+    renderQuestions(); renderState(); renderList(); renderProgress();
+    if (isComplete(a)) completed(a);
+  }
+  function renderAi() {
+    const id = cases[cur].id, s = aiOf(id), box = $("aibox");
+    box.hidden = !s;
+    if (!s) return;
+    const x = AI && AI.answers[id], a = ann[id], done = isComplete(a);
+    const model = (a && a.ai && a.ai_model) || (AI && AI.model) || "an AI model";
+    const why = (x && x.note) || "(none given)";
+    $("aiNote").textContent = why;
+    $("aiText").title = "AI's reasoning: " + why;
+    $("aiTag").title = "Answers pre-filled by " + model + (AI && AI.runs > 1 ? " (the most frequent answer of " + AI.runs + " runs)" : "") +
+      ". Check every answer, change any that is wrong, then confirm.";
+    const b = $("confirmBtn");
+    b.disabled = done;
+    b.firstChild.textContent = done ? "Confirmed" : "Confirm";
+    b.title = done ? "You have confirmed every answer of this case" : "Keep the AI's answers you did not change and go to the next case (Enter)";
+  }
   function answerKey(k) {
-    const a = curRec();
-    if (skipped(G.questions[active], a)) { active = firstOpen(a); renderQuestions(); }
+    if (skipped(G.questions[active], shownView(cases[cur].id))) { active = firstOpen(cases[cur].id); renderQuestions(); }
     const q = G.questions[active], op = q.options.find((o) => o.key === k);
     if (!op) return toast("Question " + (active + 1) + " has " + q.options.length + " answers: keys 1–" + q.options.length);
     answer(active, op.code);
@@ -890,7 +1264,8 @@
     if (allDoneShown) return;
     allDoneShown = true;
     const v = await ask("All cases are annotated — thank you!", [
-      "Please download your annotations and send the JSON file back to us." + (server.on ? " A copy is also in the results folder." : ""),
+      me ? "Your annotations are saved. Downloading a copy is optional."
+        : "Please download your annotations and send the JSON file back to us." + (server.on ? " A copy is also in the results folder." : ""),
       "You can still click any case on the left to look at it again or change it."],
     [{ label: "Close", value: false, cancel: true }, { label: "Download annotations", value: true, primary: true }]);
     if (v) doExport("json");
@@ -915,6 +1290,7 @@
     if ((a.note || "") === v) return;
     a.note = v;
     a.annotated_at = isoNow();
+    touch(id);
     changed();
     if (cases[cur].id === id) { renderState(); renderList(); renderProgress(); }
   }
@@ -924,7 +1300,7 @@
     if (!session || k < 0 || k >= N) return;
     if (document.activeElement === $("note")) $("note").blur();
     flushNote(); saveTime();
-    if (k !== cur) { cur = k; active = firstOpen(ann[cases[cur].id]); }
+    if (k !== cur) { cur = k; active = firstOpen(cases[cur].id); }
     renderCase();
     record.last_case = cases[cur].id;
   }
@@ -950,7 +1326,7 @@
       } else if (nx && nx.image) new Image().src = mediaUrl(nx.image);   // preload the next image
     }
     if (document.activeElement !== $("note")) $("note").value = (a && a.note) || "";
-    if (skipped(G.questions[active], a)) active = firstOpen(a);
+    if (skipped(G.questions[active], shownView(c.id))) active = firstOpen(c.id);
     $("prevBtn").disabled = cur === 0;
     $("nextBtn").disabled = cur === N - 1;
     renderState(); renderQuestions(); renderList(); renderProgress();
@@ -1203,7 +1579,7 @@
   for (const t of ["keydown", "pointerdown", "wheel", "input"]) addEventListener(t, act, { capture: true, passive: true });
   addEventListener("pointermove", () => { const n = Date.now(); if (n - lastMove > 1000) { lastMove = n; act(); } }, { capture: true, passive: true });
   function clockRuns(now) {
-    return session && N > 0 && document.visibilityState === "visible" && $("sessBox").hidden && $("welcomeBox").hidden &&
+    return session && N > 0 && document.visibilityState === "visible" && $("sessBox").hidden && $("relayBox").hidden && $("welcomeBox").hidden &&
       (now - lastAct < IDLE_MS || !audio.paused);
   }
   setInterval(() => {
@@ -1212,6 +1588,7 @@
     if (!clockRuns(now)) return;
     const a = ensureRec(cases[cur].id);
     a.time_spent_s = (Number(a.time_spent_s) || 0) + dt / 1000;
+    touch(cases[cur].id);
     timeDirty = true;
   }, 1000);
   function saveTime() { if (timeDirty && session) { timeDirty = false; persist(); } }
@@ -1227,9 +1604,10 @@
     if (!session) return;
     flushNote(); saveTime();
     putKeepalive();
-    // no audit server (or it fails): warn when there are answers that were never exported
-    if (unexported() && (!server.on || server.fails > 0) && !leaving) {
-      const msg = "Some annotations were not downloaded yet. They stay saved in this browser.";
+    // no audit server (or it fails): warn when there are answers that were never exported; with the relay, when
+    // some are still waiting to be sent
+    if ((me ? obx.length > 0 : unexported() && (!server.on || server.fails > 0)) && !leaving) {
+      const msg = me ? "Some annotations are not saved to the lab yet. They stay saved in this browser." : "Some annotations were not downloaded yet. They stay saved in this browser.";
       e.preventDefault();
       e.returnValue = msg;
       return msg;
@@ -1295,7 +1673,8 @@
       case "ArrowRight": go(cur + 1); break;
       case " ": if (!e.repeat) togglePlay(); break;
       case "?": openHelp(); break;
-      case "Enter": if (tag === "BUTTON") done = false; else openViewer(); break;   // a focused button keeps its Enter
+      // a focused button keeps its Enter; with AI answers Enter confirms the case (F: full size), else full size
+      case "Enter": if (tag === "BUTTON") done = false; else if (AI) confirmCase(); else openViewer(); break;
       case "+": case "=": view.zoom(1.25); break;
       case "-": case "_": view.zoom(0.8); break;
       case "0": view.reset(); break;
@@ -1329,6 +1708,7 @@
   $("prevBtn").onclick = () => go(cur - 1);
   $("nextBtn").onclick = () => go(cur + 1);
   $("todoBtn").onclick = nextTodo;
+  $("confirmBtn").onclick = confirmCase;
   $("dlBtn").onclick = openDownload;
   $("dlJson").onclick = () => doExport("json");
   $("dlCsv").onclick = () => doExport("csv");
@@ -1341,7 +1721,9 @@
     if (f && session) loadFile(f);
   });
   function openHelp() {
-    rich($("gStore"), server.on
+    rich($("gStore"), me
+      ? "Your annotations are saved automatically under your name (**" + me.name.replace(/\*/g, "") + "**), as you make them. To continue on another computer, open this page there and type the same name. Others see only how many cases you have annotated, never your annotations. **Download annotations** gives you a copy."
+      : server.on
       ? "Your annotations are saved automatically in this browser and in the results folder on this computer. You can close the page and continue later by typing the same name. At the end of each sitting, and when you finish, click **Download annotations** and send us the JSON file. **Load annotations** adds annotations from a file downloaded earlier; for each case the newer annotation is kept."
       : "Your annotations are kept in this browser on this computer only; nothing is uploaded. You can close the page and continue later in the same browser by typing the same name. At the end of each sitting, and when you finish, click **Download annotations** and send us the JSON file. To continue on another computer, download the annotations here, then use **Load annotations** there; for each case the newer annotation is kept.");
     openBox("helpBox", "gOk");
@@ -1403,6 +1785,12 @@
     rich($("wIntro"), G.welcome || G.intro);
     rich($("wRules"), G.in_short || "");
     $("gNotes").replaceChildren(...(G.notes || []).map((t) => rich(el("li"), t)));
+    if (AI) {                                       // AI pre-filled answers: the welcome, How to and the keys say so
+      rich($("wAnswer"), "Each case opens with the **7 answers pre-filled by an AI**, marked **AI** and lighter than yours. Check each one: click (or press the number of) the right answer wherever the AI is wrong. Then press **Enter** (or **Confirm**) to keep the rest; the next case opens.");
+      rich($("gAi"), "**Answers pre-filled by an AI.** Each case opens with the answers of an AI model (" + AI.model.replace(/\*/g, "") + ") already chosen: they are marked **AI**, lighter and dashed, and the AI's short reasoning is under the questions. The AI is often wrong: check every answer against the image and the narration, and change any that you would not give yourself (click your answer, or press its number). Then press **Enter** or click **Confirm**: the AI's answers you did not change become yours, and the next case opens. A case counts as done only after you confirm it. A small **AI** badge keeps showing which answer the AI gave.");
+      $("gAi").hidden = false;
+      rich($("kEnterT"), "Confirm the case: keep the AI's answers you did not change; the next case opens");
+    }
     $("gRubric").replaceChildren(...G.questions.map((q, qi) => {
       const d = el("div", "rq"), ul = el("ul");
       d.append(el("h4", null, "Q" + (qi + 1) + ". " + plain(q.title)), rich(el("p"), q.help));
@@ -1445,6 +1833,7 @@
   async function start(m) {
     M = m; cases = m.cases; N = cases.length;
     byId = new Map(cases.map((c, k) => [c.id, k]));
+    AI = enc.on ? null : takeAi(window.AUDIT_AI);   // AI pre-filled answers: plaintext data only
     $("nTotal").textContent = N;
     $("setInfo").textContent = "Version " + M.manifest_version;
     buildQuestions();
@@ -1455,6 +1844,11 @@
     if (!window.XLSX) { $("dlXlsx").disabled = true; $("dlXlsx").title = "The Excel file cannot be made here (vendor/xlsx.full.min.js is missing)"; }
     server.on = await ping();
     showSave();
+    if (RELAY) {                                    // the lab's relay: the session of this browser, else ask by name
+      const st = lsJson(LS + "session");
+      if (st && st.id && st.key && st.name && st.relay === RELAY) return join(st);
+      return enter();
+    }
     const r = await openSession(false);
     if (r) await startSession(r);
   }
@@ -1466,7 +1860,13 @@
     s.onload = () => {
       const m = window.AUDIT_MANIFEST, err = checkManifest(m);
       if (err) return fatal("The case list is not valid", err);
-      start(m).catch((x) => fatal("The page could not start", String((x && x.stack) || x)));
+      // then the AI pre-filled answers, when the data folder has them; without them the page works as before
+      window.AUDIT_AI = undefined;
+      const t = document.createElement("script"), go = () => start(m).catch((x) => fatal("The page could not start", String((x && x.stack) || x)));
+      t.src = DATA + "/ai_prefill.js";
+      t.onload = go;
+      t.onerror = go;
+      document.head.append(t);
     };
     s.onerror = () => fatal("The case list could not be loaded", onSite
       ? "This site has no case list in " + DATA + "/ (neither meta.json with encrypted data nor manifest.js). Please reload the page; if it happens again, contact the study team."
@@ -1606,9 +2006,11 @@
   window.AUDIT_APP = {
     slugify, mediaUrl, isoNow, normCode, csvText: () => csvText(exportObject()), exportObject: () => exportObject(),
     status: (id) => status(id), annotation: (id) => ann[id], answer: (q, code) => answer(QIDS.indexOf(q), code),
-    ids: () => cases.map((c) => c.id), blobs: () => blobs.size,
+    ids: () => cases.map((c) => c.id), blobs: () => blobs.size, confirm: () => confirmCase(), view: (id) => shownView(id),
+    ai: (id) => aiOf(id), aiModel: () => (AI ? AI.model : ""),
     get state() {
       return { session, slug, storeKey, cur, active, n: N, id: cases[cur] && cases[cur].id, server: Object.assign({}, server), done: countDone(),
+        relay: RELAY, me: me && { id: me.id, name: me.name }, outbox: obx.length, sending: rl.sending, fails: rl.fails,
         mode: enc.on ? "encrypted" : M ? "plain" : "", audio: audioState };
     },
   };

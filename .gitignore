@@ -16,3 +16,7 @@ tests/tmp/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# The relay's own settings (relay.local.example.json is the template) and its Python
+relay/relay.local.json
+relay/.venv/

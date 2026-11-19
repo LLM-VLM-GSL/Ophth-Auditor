@@ -1,0 +1,91 @@
+{
+ "tool": "ophth-audit",
+ "tool_version": "1.0",
+ "rubric_version": "rubric-v1",
+ "manifest_version": "fixture-v1",
+ "exported_at": "2026-11-18T01:01:30-07:00",
+ "rater": {
+  "name": "testlab/vision-model#2",
+  "role": "llm",
+  "years_experience": null
+ },
+ "run": {
+  "provider": "testlab",
+  "model": "vision-model",
+  "repeat": "2"
+ },
+ "annotations": {
+  "T001": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "partial",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "note": "Subretinal fluid beneath the fovea on an OCT B-scan.",
+   "annotated_at": "2026-11-18T01:01:00-07:00",
+   "time_spent_s": 4.0
+  },
+  "T002": {
+   "q1_ophthalmic": "no",
+   "q2_modality": "na",
+   "q3_crop": "na",
+   "q4_image_text": "na",
+   "q5_faithful": "na",
+   "q6_clinical": "na",
+   "q7_pii": "yes",
+   "note": "Mostly text and a graph; a visit date appears at the bottom.",
+   "annotated_at": "2026-11-18T01:01:00-07:00",
+   "time_spent_s": 4.0
+  },
+  "T003": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "cant_judge",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "note": "Looks like an OCT angiography slab; no narration.",
+   "annotated_at": "2026-11-18T01:01:00-07:00",
+   "time_spent_s": 4.0
+  },
+  "T004": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "uwf",
+   "q3_crop": "partial",
+   "q4_image_text": "partial",
+   "q5_faithful": "cant_judge",
+   "q6_clinical": "minor",
+   "q7_pii": "no",
+   "note": "Peripheral hemorrhages are hard to confirm in this crop.",
+   "annotated_at": "2026-11-18T01:01:00-07:00",
+   "time_spent_s": 4.0
+  },
+  "T005": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "note": "The description follows the narration and fits the B-scan.",
+   "annotated_at": "2026-11-18T01:01:00-07:00",
+   "time_spent_s": 4.0
+  },
+  "T006": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "note": "Central ellipsoid zone loss on OCT, as narrated.",
+   "annotated_at": "2026-11-18T01:01:00-07:00",
+   "time_spent_s": 4.0
+  }
+ }
+}

@@ -1,5 +1,7 @@
-# Publishes web/ as a static GitHub Pages site on every push to main. There is no server: the page loads
-# the audit data from web/data/, keeps annotations in the rater's browser, and raters export them as a file.
+# Publishes web/ as a static GitHub Pages site on every push to main. The page loads the audit data from web/data/
+# and keeps annotations in the rater's browser; raters download them as a file. When the repository variable
+# AUDIT_RELAY_URL is set (the lab's relay, relay/relay.py, e.g. https://<lab host>/api/ophth-audit), it is written
+# into web/config.js and the page also saves every annotation there as it is made (as Retify does).
 name: pages
 on:
   push:
@@ -37,6 +39,25 @@ jobs:
       - name: The page code parses
         run: |
           for f in web/*.js; do node --check "$f"; done
+
+      - name: Point the page at the relay
+        if: vars.AUDIT_RELAY_URL != ''
+        env:
+          RELAY_URL: ${{ vars.AUDIT_RELAY_URL }}
+        run: |
+          printf 'window.AUDIT_CONFIG = { server: false, encrypted: false, relay: %s };\n' \
+            "$(jq -Rn --arg u "${RELAY_URL%/}" '$u')" > web/config.js
+          cat web/config.js
+
+      - name: Check that the relay answers the page
+        if: vars.AUDIT_RELAY_URL != ''
+        env:
+          RELAY_URL: ${{ vars.AUDIT_RELAY_URL }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          origin="https://$(echo "$OWNER" | tr '[:upper:]' '[:lower:]').github.io"
+          curl -sf -H "Origin: $origin" "${RELAY_URL%/}/status" | jq -e .ok > /dev/null \
+            || echo "::warning::the relay at $RELAY_URL/status does not answer; annotations will wait in raters' browsers until it does"
 
       - name: The public site never talks to a server
         run: |

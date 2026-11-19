@@ -2,7 +2,9 @@
 // Approach adapted from the end-to-end tests of an earlier MIT-licensed annotation tool by the same authors.
 //
 //   node tests/e2e.mjs plain [outdir]               file:// web/index.html?data=../tests/fixture/data (plaintext
-//                                                    fixture): the whole rating flow, exports, load/merge, layout
+//                                                    fixture): the whole rating flow, exports, load/merge, layout, and
+//                                                    the AI pre-filled answers (fixture data/ai_prefill.js): shown,
+//                                                    changed, confirmed with Enter, kept in the exports
 //   node tests/e2e.mjs encrypted [outdir]           encrypts the fixture with a test code into a temporary folder,
 //                                                    serves web/ with it as data/ on http://127.0.0.1, and tests the
 //                                                    access dialog, remembered keys, Lock, #key= links, decryption
@@ -108,11 +110,11 @@ async function click(sel) {
   await sleep(200);
 }
 async function until(expr, ms = 6000) { const t0 = Date.now(); while (Date.now() - t0 < ms) { if (await js(expr)) return true; await sleep(100); } return false; }
-async function waitDownloads(n, ms = 10000) {
+async function waitDownloads(n, ms = 10000, dir = outdir) {
   const t0 = Date.now();
   let f = [];
   while (Date.now() - t0 < ms) {
-    f = readdirSync(outdir).filter((x) => x.startsWith("ophth_audit_") && !x.endsWith(".crdownload"));
+    f = readdirSync(dir).filter((x) => x.startsWith("ophth_audit_") && !x.endsWith(".crdownload"));
     if (f.length >= n) return f;
     await sleep(200);
   }
@@ -161,6 +163,14 @@ async function typeCode(code, remember) {   // the access dialog: type a code an
   await until(`!document.getElementById("aGo").disabled && (!document.getElementById("aErr").hidden || document.getElementById("accessBox").hidden)`, 15000);
   await sleep(200);
 }
+// the AI's answers of the fixture (tests/fixture/data/ai_prefill.js, from tests/fixture/ai_runs by tools/build_ai_prefill.py)
+const AI_FIX = {
+  T001: { q1_ophthalmic: "yes", q2_modality: "oct", q3_crop: "good", q4_image_text: "full", q5_faithful: "partial", q6_clinical: "correct", q7_pii: "no" },
+  T002: { q1_ophthalmic: "no", q2_modality: "na", q3_crop: "na", q4_image_text: "na", q5_faithful: "na", q6_clinical: "na", q7_pii: "yes" },
+  T003: { q1_ophthalmic: "yes", q2_modality: "angio", q3_crop: "good", q4_image_text: "full", q5_faithful: "cant_judge", q6_clinical: "correct", q7_pii: "no" },
+};
+const pickQ = (a) => (a ? Object.fromEntries(Object.keys(AI_FIX.T001).map((q) => [q, a[q]])) : null);
+const same = (x, y) => JSON.stringify(x) === JSON.stringify(y);
 const storedKeys = () => js(`Object.keys(localStorage).filter(k=>k.startsWith("ophth-audit:key:"))`);
 
 // ------------------------------------------------------------------ connect
@@ -240,8 +250,13 @@ async function plain() {
   check("image loaded", await until(`document.getElementById("img").naturalWidth>0`));
   check("description shown", (await js(`document.getElementById("caption").textContent`)).startsWith("Optical coherence tomography B-scan"));
   check("English transcript, no language line", (await js(`document.getElementById("langInfo").textContent`)) === "" && (await js(`document.getElementById("transcript").textContent`)).startsWith("Here you can see"));
-  check("q2 offers 7 answers incl. Multi (key 6)", (await js(`[...document.querySelectorAll('[data-q=q2_modality] .opt')].map(b=>b.textContent).join("|")`)) === "1OCT|2CFP|3UWF|4Angio|5Other|6Multi|7Unsure");
+  check("q2 offers 7 answers incl. Multi (key 6)", (await js(`[...document.querySelectorAll('[data-q=q2_modality] .opt')].map(b=>b.querySelector("kbd").textContent+b.querySelector("span").textContent).join("|")`)) === "1OCT|2CFP|3UWF|4Angio|5Other|6Multi|7Unsure");
   check("plain words only on the page", !TECH.test(await shownText()), ((await shownText()).match(TECH) || [])[0]);
+  check("AI pre-filled answers: the 7 AI answers are pre-selected, marked AI, and not the reviewer's yet",
+    (await js(`document.querySelectorAll("#qlist .opt.ai").length===7 && document.querySelectorAll("#qlist .q.sug").length===7 && !document.querySelector("#qlist .opt.sel") && document.querySelectorAll("#qlist .opt.aimark").length===7`)) &&
+    !((await ann("T001")) || {}).q1_ophthalmic && (await js(`AUDIT_APP.status("T001")`)) === "todo");
+  check("…with the AI's reasoning and Confirm next to the questions", (await visible("aibox")) && (await js(`document.getElementById("aiNote").textContent`)).startsWith("OCT B-scan with subretinal fluid") &&
+    (await js(`document.getElementById("confirmBtn").textContent`)) === "ConfirmEnter");
   await shot("f1_case1.png");
 
   await sleep(2200);                                         // some time on the case
@@ -310,17 +325,19 @@ async function plain() {
   check("+ zooms in (Reset view enabled)", !(await js(`document.getElementById("resetBtn").disabled`)));
   await key("0");
   check("0 resets the view", await js(`document.getElementById("resetBtn").disabled`));
-  await key("Enter");
-  check("Enter opens the full-size view", await until(`!document.getElementById("viewer").hidden && document.getElementById("vimg").naturalWidth>0`));
+  await key("f");
+  check("F opens the full-size view", await until(`!document.getElementById("viewer").hidden && document.getElementById("vimg").naturalWidth>0`));
   await shot("f3_viewer.png");
   await key("Enter");
-  check("Enter closes it", await js(`document.getElementById("viewer").hidden`));
+  check("Enter closes it (in the full-size view, Enter does not confirm)", (await js(`document.getElementById("viewer").hidden`)) && !((await ann("T004")) || {}).q1_ophthalmic);
   await key("f");
-  check("F opens it too", await until(`!document.getElementById("viewer").hidden`));
+  check("F opens it again", await until(`!document.getElementById("viewer").hidden`));
   await key("Escape");
   check("Esc closes it", await js(`document.getElementById("viewer").hidden`));
   await click("#help");
   check("How to: the full rubric, the guidelines and the keys", (await js(`!document.getElementById("helpBox").hidden && document.querySelectorAll("#gRubric .rq").length===7 && document.getElementById("gRubric").textContent.includes("Multi") && document.querySelectorAll("#gNotes li").length>3 && document.querySelectorAll("#keysTable tr").length>=10`)));
+  check("How to explains the AI pre-filled answers and Enter = Confirm, F = full size", (await js(`!document.getElementById("gAi").hidden && document.getElementById("gAi").textContent.includes("pre-filled by an AI")`)) &&
+    (await js(`document.getElementById("kEnterT").textContent`)).startsWith("Confirm the case") && (await js(`document.getElementById("keysTable").textContent.includes("F, Enter or Esc closes it")`)));
   check("How to names the eye, and says how annotations are kept (no server words)", (await js(`document.getElementById("helpBox").textContent.includes("eye at the top left")`)) && !TECH.test(await js(`document.getElementById("helpBox").innerText`)));
   await shot("d3_howto.png");
   await key("Escape");
@@ -333,7 +350,7 @@ async function plain() {
   await key("Escape");
   await key("e");
   await key("5");
-  check("E focuses the note; 5 is typed, not an answer", (await js(`document.getElementById("note").value`)) === "5" && !(await ann("T004")).q1_ophthalmic);
+  check("E focuses the note; 5 is typed, not an answer", (await js(`document.getElementById("note").value`)) === "5" && !((await ann("T004")) || {}).q1_ophthalmic);
   const NOTE4 = '5, "quoted"\nline 2; café';
   await cdp("Input.insertText", { text: NOTE4.slice(1) });
   await key("Escape");
@@ -401,7 +418,8 @@ async function plain() {
       T003: { q1_ophthalmic: "unsure", q2_modality: "unsure", q3_crop: "bad", q4_image_text: "full", q5_faithful: "cant_judge", q6_clinical: "cant_judge", q7_pii: "no" },
       T004: { q1_ophthalmic: "", q7_pii: "", note: '5, "quoted"\nline 2; café' },
       T005: { q1_ophthalmic: "", q2_modality: "", note: "", annotated_at: "" },
-    }, timed: ["T001", "T002", "T003"] };
+    }, timed: ["T001", "T002", "T003"], ai_model: "testlab/vision-model",
+    ai: { T001: AI_FIX.T001, T002: AI_FIX.T002, T003: AI_FIX.T003 } };
   checkExports(expected);
   const jsonFile = join(outdir, files.find((f) => f.endsWith(".json"))), xlsxFile = join(outdir, files.find((f) => f.endsWith(".xlsx")));
   const csvFile = join(outdir, files.find((f) => f.endsWith(".csv")));
@@ -459,6 +477,81 @@ async function plain() {
   await startSession("Second Rater", true);
   check("a second rater starts empty", (await js(`document.getElementById("pDone").textContent`)) === "0 / 6" && (await js(`AUDIT_APP.state.slug`)) === "second-rater");
   await shot("f6_end.png");
+  await aiFlow();
+}
+
+
+// AI pre-filled answers, for a new reviewer: confirm with Enter, change answers, skip logic, provenance in the exports
+async function aiFlow() {
+  check("AI: the fixture's AI answers are loaded", (await js(`AUDIT_APP.aiModel()`)) === "testlab/vision-model" && same(pickQ(await js(`AUDIT_APP.ai("T003")`)), AI_FIX.T003));
+  check("AI: case 1 opens pre-filled; an untouched pre-fill is not an annotation", (await js(`AUDIT_APP.state.id`)) === "T001" &&
+    (await js(`document.querySelectorAll("#qlist .opt.ai").length`)) === 7 && (await js(`AUDIT_APP.status("T001")`)) === "todo" && (await js(`document.getElementById("pDone").textContent`)) === "0 / 6");
+  // the layout with the AI's answers and reasoning, at a 1366x768 laptop (about 1366x657 of page), bright and dark
+  await cdp("Emulation.setDeviceMetricsOverride", { width: 1366, height: 657, deviceScaleFactor: 1, mobile: false });
+  await sleep(400);
+  await layoutChecks("AI pre-filled, 1366x657");
+  check("AI pre-filled, 1366x657: the AI's reasoning and Confirm are visible", await js(`(()=>{const b=document.getElementById("aibox").getBoundingClientRect(),n=document.getElementById("note").getBoundingClientRect();return b.height>20&&b.bottom<=innerHeight&&n.bottom<=innerHeight})()`));
+  await shot("a1_prefill_1366x657_bright.png");
+  await click("#theme");
+  await layoutChecks("AI pre-filled, 1366x657 dark");
+  await shot("a2_prefill_1366x657_dark.png");
+  await click("#theme");
+  await cdp("Emulation.clearDeviceMetricsOverride");
+  await sleep(1200);                                          // some time on the case
+  await key("Enter");
+  const a1 = await ann("T001");
+  check("AI: Enter confirms the case: every answer the AI's, complete, the next case opens", (await js(`AUDIT_APP.state.id`)) === "T002" &&
+    same(pickQ(a1), AI_FIX.T001) && (await js(`AUDIT_APP.status("T001")`)) === "done", pickQ(a1));
+  check("AI: the annotation keeps the AI's answers it showed (ai, ai_model)", same(a1.ai, AI_FIX.T001) && a1.ai_model === "testlab/vision-model", a1.ai);
+  // T002: the AI says q1 no (q2-q6 skipped) and q7 yes; the reviewer changes q1 to yes
+  check("AI: q1 'no' by the AI: q2-q6 are shown skipped", (await js(`document.querySelectorAll("#qlist .q.skip").length`)) === 5 && (await js(`document.querySelectorAll("#qlist .opt.ai").length`)) === 2);
+  await key("1");
+  check("AI: the reviewer changes q1 to yes: q2-q6 open, without AI answers (the AI had none)", (await js(`document.querySelectorAll("#qlist .q.skip").length`)) === 0 &&
+    (await js(`document.querySelectorAll("#qlist .opt.ai").length`)) === 1 && (await js(`AUDIT_APP.state.active`)) === 1 && (await ann("T002")).q1_ophthalmic === "yes");
+  check("AI: the AI's own answer keeps its AI badge after the change", await js(`document.querySelector('[data-q=q1_ophthalmic] .opt.aimark span').textContent==="No" && document.querySelector('[data-q=q1_ophthalmic] .opt.sel span').textContent==="Yes"`));
+  await key("Enter");
+  check("AI: Confirm with a question the AI did not answer: says so, stays", (await js(`AUDIT_APP.state.id`)) === "T002" && (await js(`document.getElementById("toast").textContent`)).startsWith("Question 2 has no AI answer") &&
+    (await js(`AUDIT_APP.status("T002")`)) === "partial", await js(`document.getElementById("toast").textContent`));
+  await keys("21211");                                         // cfp good partial full correct; q7 stays the AI's
+  check("AI: answered q2-q6, q7 still the AI's: not complete yet", (await js(`AUDIT_APP.state.id`)) === "T002" && (await js(`AUDIT_APP.state.active`)) === 6 && !(await ann("T002")).q7_pii);
+  await key("Enter");
+  check("AI: Confirm takes the AI's q7 'yes', which asks for a note", (await ann("T002")).q7_pii === "yes" && (await js(`document.activeElement.id`)) === "note");
+  await cdp("Input.insertText", { text: "date in the corner" });
+  await key("Escape");
+  await key("Enter");
+  check("AI: then Enter opens the next case", (await js(`AUDIT_APP.state.id`)) === "T003" && (await js(`AUDIT_APP.status("T002")`)) === "flag");
+  // T003: one answer changed by a click, then confirmed
+  await sleep(1200);
+  await click('[data-q=q2_modality] .opt:nth-child(1)');      // OCT (the AI: Angio)
+  check("AI: a clicked answer is the reviewer's; the rest stay the AI's", (await ann("T003")).q2_modality === "oct" && !(await ann("T003")).q1_ophthalmic &&
+    (await js(`document.querySelectorAll("#qlist .opt.ai").length`)) === 6);
+  await shot("a3_changed_one.png");
+  await click("#confirmBtn");
+  const a3 = await ann("T003");
+  check("AI: Confirm (button) keeps the AI's other answers", same(pickQ(a3), { ...AI_FIX.T003, q2_modality: "oct" }) && same(a3.ai, AI_FIX.T003) && (await js(`AUDIT_APP.state.id`)) === "T004", pickQ(a3));
+  await key("ArrowLeft");
+  check("AI: a confirmed case: Confirm says Confirmed", (await js(`document.getElementById("confirmBtn").disabled && document.getElementById("confirmBtn").firstChild.textContent==="Confirmed"`)));
+  // the exports: the answers, and the AI's answers next to them
+  const dir = join(outdir, "ai");
+  mkdirSync(dir, { recursive: true });
+  await cdp("Browser.setDownloadBehavior", { behavior: "allow", downloadPath: dir });
+  await key("s", { mod: 2 }); await sleep(700);
+  await click("#dlBtn"); await js(`document.getElementById("dlCsv").click()`); await sleep(700);
+  await click("#dlBtn"); await js(`document.getElementById("dlXlsx").click()`);
+  const files = await waitDownloads(3, 10000, dir);
+  check("AI: JSON, CSV and XLSX downloaded", ["json", "csv", "xlsx"].every((e) => files.some((f) => f.endsWith("." + e))), files);
+  const j = JSON.parse(readFileSync(join(dir, files.find((f) => f.endsWith(".json"))), "utf8"));
+  const prov = (id) => Object.keys(AI_FIX.T001).filter((q) => j.annotations[id][q] !== j.annotations[id].ai[q]);
+  check("AI: provenance in the JSON: T001 all kept; T002 q1-q6 changed (q1 yes, the AI's na); T003 q2 changed",
+    same(prov("T001"), []) && same(prov("T002"), ["q1_ophthalmic", "q2_modality", "q3_crop", "q4_image_text", "q5_faithful", "q6_clinical"]) && same(prov("T003"), ["q2_modality"]),
+    [prov("T001"), prov("T002"), prov("T003")]);
+  checkExports({ manifest_version: "fixture-v1", rater: { name: "Second Rater", role: "", years_experience: null },
+    answers: {
+      T001: { ...AI_FIX.T001, note: "" },
+      T002: { q1_ophthalmic: "yes", q2_modality: "cfp", q3_crop: "good", q4_image_text: "partial", q5_faithful: "full", q6_clinical: "correct", q7_pii: "yes", note: "date in the corner" },
+      T003: { ...AI_FIX.T003, q2_modality: "oct" },
+      T006: { q1_ophthalmic: "" },
+    }, timed: ["T001", "T002", "T003"], ai_model: "testlab/vision-model", ai: AI_FIX }, dir);
 }
 
 async function layoutChecks(tag) {
@@ -501,11 +594,11 @@ async function narrowChecks() {
   await js(`scrollTo(0,0)`);
 }
 
-function checkExports(expected) {
+function checkExports(expected, dir = outdir) {
   writeFileSync(join(outdir, "expected.json"), JSON.stringify(expected, null, 1));
   let py = "";
   try {
-    py = execFileSync(PY, ["-B", join(HERE, "check_exports.py"), outdir, "--expect", join(outdir, "expected.json"), "--manifest", join(FIXTURE, "manifest.js")], { encoding: "utf8" });
+    py = execFileSync(PY, ["-B", join(HERE, "check_exports.py"), dir, "--expect", join(outdir, "expected.json"), "--manifest", join(FIXTURE, "manifest.js")], { encoding: "utf8" });
     check("tests/check_exports.py: the exports are as documented", true);
   } catch (e) { py = (e.stdout || "") + (e.stderr || ""); check("tests/check_exports.py: the exports are as documented", false); }
   console.log(py.split("\n").map((l) => "     | " + l).join("\n"));
@@ -547,6 +640,10 @@ async function encrypted() {
   await key(" ");
   check("Space plays the decrypted audio", await until(`!document.getElementById("audio").paused`, 3000));
   await key(" ");
+  check("encrypted data: no AI pre-filled answers (Enter is full size, as before)", (await js(`document.getElementById("aibox").hidden && !document.querySelector("#qlist .opt.ai") && AUDIT_APP.aiModel()===""`)));
+  await key("Enter");
+  check("…Enter opens the full-size view", await until(`!document.getElementById("viewer").hidden`));
+  await key("Escape");
   await key("f");
   check("full-size view works with the blob: image", await until(`!document.getElementById("viewer").hidden && document.getElementById("vimg").src.startsWith("blob:") && document.getElementById("vimg").naturalWidth===640`));
   await key("Escape");
@@ -707,4 +804,34 @@ async function real() {
   await narrowChecks();
   await click("#theme");
   await cdp("Emulation.clearDeviceMetricsOverride");
+  await realAi(ids);
+}
+
+// the site's AI pre-filled answers (data/ai_prefill.js): shown, confirmed with Enter, one changed, kept in the JSON
+async function realAi(ids) {
+  const model = await js(`AUDIT_APP.aiModel()`);
+  if (!check("the site has AI pre-filled answers (data/ai_prefill.js)", !!model, model)) return;
+  await js(`(()=>{const g=document.getElementById("goto");g.value="1";g.dispatchEvent(new KeyboardEvent("keydown",{key:"Enter",bubbles:true}))})()`);
+  await sleep(300);
+  const ai0 = await js(`JSON.stringify(AUDIT_APP.ai(${JSON.stringify(ids[0])}))`).then(JSON.parse);
+  check("case 1 opens with the AI's answers pre-selected and its reasoning", (await js(`document.querySelectorAll("#qlist .opt.ai").length + document.querySelectorAll("#qlist .q.skip").length`)) === 7 &&
+    (await visible("aibox")) && (await js(`document.getElementById("aiNote").textContent.length>10`)) && (await js(`AUDIT_APP.status(${JSON.stringify(ids[0])})`)) === "todo");
+  await key("Enter");
+  const a0 = await ann(ids[0]);
+  check("Enter confirms case 1 (the AI's answers), the next case opens", (await js(`AUDIT_APP.state.cur`)) === 1 && answers(a0) === answers(ai0) && (await js(`AUDIT_APP.status(${JSON.stringify(ids[0])})`)) !== "todo", answers(a0));
+  const ai1 = await js(`JSON.stringify(AUDIT_APP.ai(${JSON.stringify(ids[1])}))`).then(JSON.parse);
+  const other = ["no", "yes"].find((c) => c !== ai1.q7_pii);   // q7 is never skipped, whatever the AI said about q1
+  await click(`[data-q=q7_pii] .opt:nth-child(${["no", "yes"].indexOf(other) + 1})`);
+  await key("Enter");
+  const a1 = await ann(ids[1]);
+  check("case 2: one answer changed (q7), the rest confirmed", a1.q7_pii === other && a1.q7_pii !== a1.ai.q7_pii && answers({ ...a1, q7_pii: ai1.q7_pii }) === answers(ai1), answers(a1));
+  for (const f of readdirSync(outdir).filter((x) => x.startsWith("ophth_audit_"))) rmSync(join(outdir, f));
+  await key("s", { mod: 2 });
+  const files = await waitDownloads(1);
+  if (!check("the JSON downloads", files.length === 1, files)) return;
+  const j = JSON.parse(readFileSync(join(outdir, files[0]), "utf8")), r0 = j.annotations[ids[0]], r1 = j.annotations[ids[1]];
+  const changed = (r) => Object.keys(r.ai).filter((q) => r[q] !== r.ai[q]);
+  check("the JSON keeps the AI's answers (ai, ai_model) and the provenance: case 1 all kept, case 2 q7 changed",
+    r0.ai_model === model && r1.ai_model === model && answers(r0.ai) === answers(ai0) && changed(r0).length === 0 && same(changed(r1), ["q7_pii"]), [changed(r0), changed(r1)]);
+  await shot("r5_confirmed_changed_1366x768.png");
 }

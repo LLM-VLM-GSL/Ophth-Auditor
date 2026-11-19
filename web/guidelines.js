@@ -105,20 +105,20 @@ window.AUDIT_GUIDELINES = {
     },
     {
       "id": "q5_faithful",
-      "title": "Is the description supported by the narration (transcript/audio)?",
-      "short": "Supported by narration?",
-      "help": "Compare the description with what the expert said. Paraphrase is fine. Your own clinical opinion belongs in Q6, not here.",
+      "title": "Does the description invent anything (not supported by the narration or the image)?",
+      "short": "Invented content?",
+      "help": "Only fabrication counts. Leaving things out is fine; paraphrase and standard terminology are fine; a detail that the narration does not mention but that is clearly visible in the image is fine. Your own clinical opinion belongs in Q6, not here.",
       "required": true,
       "skip_if": { "q1_ophthalmic": ["no"] },
       "options": [
-        { "code": "full", "label": "Full", "key": "1",
-          "help": "Everything in the description is stated or directly implied by the narration." },
-        { "code": "partial", "label": "Partial", "key": "2",
-          "help": "Minor omissions or rewording, but no finding, diagnosis or detail that the narration does not support." },
-        { "code": "unsupported", "label": "Unsupported", "key": "3", "issue": true,
-          "help": "States at least one finding, diagnosis, location, number or other detail that is not in the narration or contradicts it. Turning a hedged statement ('possible CNV') into a definite one counts here too." },
+        { "code": "full", "label": "No", "key": "1",
+          "help": "Everything in the description is said or implied in the narration, or clearly visible in the image. Omissions do not matter." },
+        { "code": "partial", "label": "Minor", "key": "2",
+          "help": "A small detail that neither the narration nor the image supports, but that does not change the clinical meaning (e.g. a generic term, an unneeded qualifier)." },
+        { "code": "unsupported", "label": "Yes", "key": "3", "issue": true,
+          "help": "States a finding, diagnosis, imaging modality, location or number that neither the narration nor the image supports, or that contradicts them. Turning a hedged statement ('possible CNV') into a definite diagnosis counts too." },
         { "code": "cant_judge", "label": "Can't judge", "key": "4",
-          "help": "The narration is missing, unintelligible, or too fragmentary to compare." }
+          "help": "The narration is missing, unintelligible, or too fragmentary, and the image does not settle it." }
       ]
     },
     {

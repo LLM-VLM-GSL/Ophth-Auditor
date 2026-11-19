@@ -682,7 +682,7 @@ def parse_args(argv=None):
     sel = ap.add_mutually_exclusive_group()
     sel.add_argument("--cases", help="case ids: ranges, ids or prefixes, e.g. A001-A010,A015 or A")
     sel.add_argument("--limit", type=int, help="first N cases in presentation order")
-    ap.add_argument("--concurrency", type=int, default=4, help="parallel requests (default 4)")
+    ap.add_argument("--concurrency", type=int, default=12, help="parallel requests per run; repeats run at the same time (default 12)")
     ap.add_argument("--out", default="llm_runs", help="output folder (default ./llm_runs)")
     ap.add_argument("--repeats", type=int, default=1, help="K independent runs -> K files, raters <provider>/<model>#1..K")
     ap.add_argument("--first-repeat", type=int, default=1, help="number of the first repeat (to add runs later; default 1)")
@@ -749,7 +749,7 @@ def main(argv=None, provider_factory=None):
         return 0
 
     paths = []
-    for name in names:
+    def one(name):
         prov = provider_factory(a) if provider_factory else make_provider(a)
         settings = {"temperature": getattr(prov, "temperature", None), "effort": getattr(prov, "effort", None),
                     "max_tokens": getattr(prov, "max_tokens", None), "json_mode": a.json_mode,
@@ -757,7 +757,12 @@ def main(argv=None, provider_factory=None):
                     "repeat": name.rsplit("#", 1)[1] if "#" in name else None}
         run = Run(prov, index, rubric, tasks, source, name, a.out, settings, transcript_lang=a.transcript_lang,
                   image_max_side=a.image_max_side, max_fix=a.max_fix, fresh=a.fresh, formats=formats)
-        paths.append(run.execute(case_ids, a.concurrency))
+        return run.execute(case_ids, a.concurrency)
+
+    # repeats are independent runs: run them at the same time (each with its own --concurrency requests)
+    import concurrent.futures as _cf
+    with _cf.ThreadPoolExecutor(max_workers=max(1, len(names))) as ex:
+        paths = [p for p in ex.map(one, names) if p]
     return 0 if paths else 1
 
 

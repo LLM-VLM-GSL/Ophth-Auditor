@@ -1,0 +1,91 @@
+{
+ "tool": "ophth-audit",
+ "tool_version": "1.0",
+ "rubric_version": "rubric-v1",
+ "manifest_version": "fixture-v1",
+ "exported_at": "2026-11-18T01:02:30-07:00",
+ "rater": {
+  "name": "testlab/vision-model#3",
+  "role": "llm",
+  "years_experience": null
+ },
+ "run": {
+  "provider": "testlab",
+  "model": "vision-model",
+  "repeat": "3"
+ },
+ "annotations": {
+  "T001": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "partial",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "note": "OCT B-scan; the description matches the visible fluid.",
+   "annotated_at": "2026-11-18T01:02:00-07:00",
+   "time_spent_s": 4.0
+  },
+  "T002": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "cfp",
+   "q3_crop": "partial",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "minor",
+   "q7_pii": "no",
+   "note": "A fundus photograph with exudates near the macula.",
+   "annotated_at": "2026-11-18T01:02:00-07:00",
+   "time_spent_s": 4.0
+  },
+  "T003": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "cfp",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "cant_judge",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "note": "A green-tinted fundus image; there is no narration.",
+   "annotated_at": "2026-11-18T01:02:00-07:00",
+   "time_spent_s": 4.0
+  },
+  "T004": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "uwf",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "cant_judge",
+   "q6_clinical": "minor",
+   "q7_pii": "no",
+   "note": "Widefield fundus image; the transcript is empty.",
+   "annotated_at": "2026-11-18T01:02:00-07:00",
+   "time_spent_s": 4.0
+  },
+  "T005": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "partial",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "note": "OCT of the macula; most findings are in the narration.",
+   "annotated_at": "2026-11-18T01:02:00-07:00",
+   "time_spent_s": 4.0
+  },
+  "T006": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "partial",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "minor",
+   "q7_pii": "no",
+   "note": "OCT B-scan, slightly cut at the edges.",
+   "annotated_at": "2026-11-18T01:02:00-07:00",
+   "time_spent_s": 4.0
+  }
+ }
+}

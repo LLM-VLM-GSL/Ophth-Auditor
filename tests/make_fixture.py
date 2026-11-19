@@ -8,14 +8,18 @@ Six dummy cases (drawn images, silent audio), in the format of the plaintext dat
   T003 audio null, no transcript  T004 audio, empty transcript
   T005 long caption/transcript    T006 Arabic (right-to-left) transcript + translation
 Open with: web/index.html?data=../tests/fixture/data (tests/e2e.mjs also encrypts a copy for its encrypted mode)
+
+Also three made-up LLM runs (tests/fixture/ai_runs/run<k>.json, in the export format) and the AI pre-filled answers
+built from them by tools/build_ai_prefill.py (tests/fixture/data/ai_prefill.js):
+  T001 all runs agree           T002 q1 "no" by 2 of 3 runs (q2-q6 "na"), q7 "yes" by 2 of 3
+  T003 q2 without a majority (angio, oct, cfp: run 1's answer)    T004-T006 other answers, a few 2-of-3 majorities
+    python tests/make_fixture.py --ai-only      (only the runs and ai_prefill.js; standard library)
 """
 import json
 import os
 import shutil
 import subprocess
 import sys
-
-from PIL import Image, ImageDraw
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "fixture", "data")
@@ -50,7 +54,55 @@ CASES = [
 ]
 
 
+# per case: three runs' answers (q1..q7, in order) and notes
+AI_RUNS = {
+    "T001": [("yes oct good full partial correct no", "OCT B-scan with subretinal fluid under the fovea; the RPE looks intact."),
+             ("yes oct good full partial correct no", "Subretinal fluid beneath the fovea on an OCT B-scan."),
+             ("yes oct good full partial correct no", "OCT B-scan; the description matches the visible fluid.")],
+    "T002": [("no na na na na na yes", "A slide with a chart, not a clinical image; a date is visible in the corner."),
+             ("no na na na na na yes", "Mostly text and a graph; a visit date appears at the bottom."),
+             ("yes cfp partial partial full minor no", "A fundus photograph with exudates near the macula.")],
+    "T003": [("yes angio good full cant_judge correct no", "Late-phase angiogram with leakage; no narration to compare."),
+             ("yes oct good full cant_judge correct no", "Looks like an OCT angiography slab; no narration."),
+             ("yes cfp good full cant_judge correct no", "A green-tinted fundus image; there is no narration.")],
+    "T004": [("yes uwf partial partial cant_judge minor no", "Ultra-widefield image, partly cropped; empty transcript."),
+             ("yes uwf partial partial cant_judge minor no", "Peripheral hemorrhages are hard to confirm in this crop."),
+             ("yes uwf good partial cant_judge minor no", "Widefield fundus image; the transcript is empty.")],
+    "T005": [("yes oct good full full correct no", "Macular OCT with a serous PED and subretinal fluid, as the narration says."),
+             ("yes oct good full full correct no", "The description follows the narration and fits the B-scan."),
+             ("yes oct good full partial correct no", "OCT of the macula; most findings are in the narration.")],
+    "T006": [("yes oct good partial full minor no", "OCT B-scan; ellipsoid zone loss is plausible but hard to see."),
+             ("yes oct good partial full correct no", "Central ellipsoid zone loss on OCT, as narrated."),
+             ("yes oct partial partial full minor no", "OCT B-scan, slightly cut at the edges.")],
+}
+QIDS = ["q1_ophthalmic", "q2_modality", "q3_crop", "q4_image_text", "q5_faithful", "q6_clinical", "q7_pii"]
+
+
+def make_ai():
+    """The made-up LLM runs and the AI pre-filled answers built from them (tools/build_ai_prefill.py)."""
+    runs_dir = os.path.join(HERE, "fixture", "ai_runs")
+    os.makedirs(runs_dir, exist_ok=True)
+    paths = []
+    for k in range(3):
+        ann = {}
+        for cid, runs in AI_RUNS.items():
+            codes, note = runs[k]
+            ann[cid] = dict(zip(QIDS, codes.split()), note=note, annotated_at="2026-11-18T01:0%d:00-07:00" % k, time_spent_s=4.0)
+        doc = {"tool": "ophth-audit", "tool_version": "1.0", "rubric_version": "rubric-v1", "manifest_version": "fixture-v1",
+               "exported_at": "2026-11-18T01:0%d:30-07:00" % k,
+               "rater": {"name": "testlab/vision-model#%d" % (k + 1), "role": "llm", "years_experience": None},
+               "run": {"provider": "testlab", "model": "vision-model", "repeat": str(k + 1)}, "annotations": ann}
+        p = os.path.join(runs_dir, "run%d.json" % (k + 1))
+        with open(p, "w", encoding="utf-8", newline="\n") as f:
+            f.write(json.dumps(doc, ensure_ascii=False, indent=1) + "\n")
+        paths.append(p)
+    root = os.path.dirname(HERE)
+    subprocess.run([sys.executable, "-B", os.path.join(root, "tools", "build_ai_prefill.py"), *paths, "--data", OUT,
+                    "--guidelines", os.path.join(root, "web", "guidelines.js")], check=True)
+
+
 def make_image(path, size, color, label):
+    from PIL import Image, ImageDraw
     w, h = size
     im = Image.new("RGB", size, color)
     d = ImageDraw.Draw(im)
@@ -72,6 +124,8 @@ def make_mp3(path, seconds):
 
 
 def main():
+    if "--ai-only" in sys.argv[1:]:
+        return make_ai()
     if os.path.isdir(OUT):
         shutil.rmtree(OUT)
     os.makedirs(os.path.join(OUT, "images"))
@@ -90,6 +144,7 @@ def main():
     with open(os.path.join(OUT, "manifest.js"), "w", encoding="utf-8", newline="\n") as f:
         f.write("window.AUDIT_MANIFEST = " + json.dumps(manifest, ensure_ascii=False, indent=2) + ";\n")
     print("wrote %s (%d cases)" % (OUT, len(cases)))
+    make_ai()
 
 
 if __name__ == "__main__":

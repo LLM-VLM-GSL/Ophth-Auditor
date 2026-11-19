@@ -1,0 +1,91 @@
+{
+ "tool": "ophth-audit",
+ "tool_version": "1.0",
+ "rubric_version": "rubric-v1",
+ "manifest_version": "fixture-v1",
+ "exported_at": "2026-11-18T01:00:30-07:00",
+ "rater": {
+  "name": "testlab/vision-model#1",
+  "role": "llm",
+  "years_experience": null
+ },
+ "run": {
+  "provider": "testlab",
+  "model": "vision-model",
+  "repeat": "1"
+ },
+ "annotations": {
+  "T001": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "partial",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "note": "OCT B-scan with subretinal fluid under the fovea; the RPE looks intact.",
+   "annotated_at": "2026-11-18T01:00:00-07:00",
+   "time_spent_s": 4.0
+  },
+  "T002": {
+   "q1_ophthalmic": "no",
+   "q2_modality": "na",
+   "q3_crop": "na",
+   "q4_image_text": "na",
+   "q5_faithful": "na",
+   "q6_clinical": "na",
+   "q7_pii": "yes",
+   "note": "A slide with a chart, not a clinical image; a date is visible in the corner.",
+   "annotated_at": "2026-11-18T01:00:00-07:00",
+   "time_spent_s": 4.0
+  },
+  "T003": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "angio",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "cant_judge",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "note": "Late-phase angiogram with leakage; no narration to compare.",
+   "annotated_at": "2026-11-18T01:00:00-07:00",
+   "time_spent_s": 4.0
+  },
+  "T004": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "uwf",
+   "q3_crop": "partial",
+   "q4_image_text": "partial",
+   "q5_faithful": "cant_judge",
+   "q6_clinical": "minor",
+   "q7_pii": "no",
+   "note": "Ultra-widefield image, partly cropped; empty transcript.",
+   "annotated_at": "2026-11-18T01:00:00-07:00",
+   "time_spent_s": 4.0
+  },
+  "T005": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "note": "Macular OCT with a serous PED and subretinal fluid, as the narration says.",
+   "annotated_at": "2026-11-18T01:00:00-07:00",
+   "time_spent_s": 4.0
+  },
+  "T006": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "minor",
+   "q7_pii": "no",
+   "note": "OCT B-scan; ellipsoid zone loss is plausible but hard to see.",
+   "annotated_at": "2026-11-18T01:00:00-07:00",
+   "time_spent_s": 4.0
+  }
+ }
+}

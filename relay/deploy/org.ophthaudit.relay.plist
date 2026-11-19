@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- The audit relay as a system LaunchDaemon that runs as the owner's user. A template: install.sh fills in
+     __REPO__ (the repository folder), __USER__ (the user it runs as) and __HOME__ (that user's home folder)
+     and copies it to /Library/LaunchDaemons/org.ophthaudit.relay.plist. -->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>org.ophthaudit.relay</string>
+  <key>UserName</key><string>__USER__</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>__REPO__/relay/.venv/bin/python</string>
+    <string>__REPO__/relay/relay.py</string>
+    <string>__REPO__/relay/relay.local.json</string>
+  </array>
+  <key>WorkingDirectory</key><string>__REPO__</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>HOME</key><string>__HOME__</string>
+    <key>PYTHONUNBUFFERED</key><string>1</string>
+  </dict>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>10</integer>
+  <key>StandardOutPath</key><string>__HOME__/Library/Logs/ophth-audit-relay.log</string>
+  <key>StandardErrorPath</key><string>__HOME__/Library/Logs/ophth-audit-relay.log</string>
+</dict>
+</plist>

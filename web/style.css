@@ -7,6 +7,7 @@
 --flag:#b8433b;--flag-ink:#fff;--flag-soft:#fbefee;--flag-line:#e7c2be;--flag-text:#99352e;
 --todo:#c98a1a;--todo-soft:#fffaf0;--todo-line:#e6dcc6;--todo-text:#8a5a12;
 --part:#3b6ea8;--part-soft:#eef4fb;--part-line:#bcd0e8;--part-text:#2c5688;
+--ai:#6a4fb8;--ai-ink:#fff;--ai-soft:#f4f0fc;--ai-line:#b4a3e3;--ai-text:#4d3891;
 --pill:#eef2f4;--pill-line:#dce4e8;--pill-text:#49626c;--primary:#23313b;--primary-hover:#364853;--primary-ink:#fff;
 --kbd:#fff;--kbd-line:#cfd8de;--kbd-text:#4a5a64;--desc:#fffdf6;--desc-line:#e9dfc0;
 --glass:rgba(255,255,255,.55);--glass-line:rgba(255,255,255,.7);--glass-btn:rgba(255,255,255,.6);--glass-btn-line:rgba(255,255,255,.85);
@@ -19,6 +20,7 @@
 --flag:#f06b60;--flag-ink:#1e0807;--flag-soft:#311a19;--flag-line:#6b302b;--flag-text:#f59e96;
 --todo:#e2a83c;--todo-soft:#262013;--todo-line:#4d3e20;--todo-text:#e9bd66;
 --part:#6fa3e0;--part-soft:#16222f;--part-line:#2f4a6a;--part-text:#a7c8ef;
+--ai:#a48ef0;--ai-ink:#150e2c;--ai-soft:#1f1933;--ai-line:#56478f;--ai-text:#c9bcf8;
 --pill:#1c262d;--pill-line:#2f3c46;--pill-text:#a8b7c0;--primary:#e3eaee;--primary-hover:#c7d2d8;--primary-ink:#10171c;
 --kbd:#1c262d;--kbd-line:#3b4954;--kbd-text:#c2ced5;--desc:#1d1f19;--desc-line:#4a4430;
 --glass:rgba(20,28,34,.6);--glass-line:rgba(255,255,255,.12);--glass-btn:rgba(255,255,255,.08);--glass-btn-line:rgba(255,255,255,.16);
@@ -70,6 +72,14 @@ kbd{display:inline-block;min-width:20px;padding:0 5px;border:1px solid var(--kbd
 .howto:hover{background:var(--accent);border-color:transparent;filter:brightness(1.08);animation-play-state:paused;transform:translateY(-2px)}
 .howto .qm{display:grid;place-items:center;width:21px;height:21px;border-radius:50%;background:var(--accent-ink);color:var(--accent);font-size:12px;font-weight:800;line-height:1}
 @keyframes howto{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+/* everyone's progress, with the lab's relay (as in Retify): one small card per annotator, sharing the width */
+.team{flex:none;display:flex;align-items:flex-start;gap:10px;padding:5px 18px;border-bottom:1px solid var(--border);background:var(--panel-2)}
+.team .eyebrow{flex:none;width:112px;padding-top:2px;font-size:9px;line-height:1.45}.team .eyebrow .muted{display:block;text-transform:none;letter-spacing:0;font-weight:400}
+#teamrows{flex:1;min-width:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:4px;font-size:11px;line-height:1.35;color:var(--muted)}
+.trow{min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:2px 6px;padding:2px 8px 4px;border:1px solid var(--border);border-radius:6px;background:var(--panel)}
+.trow b{font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.trow span{font-variant-numeric:tabular-nums;white-space:nowrap}
+.trow.me{border-color:var(--accent-line);background:var(--accent-soft)}.trow.me b::after{content:" (you)";color:var(--accent);font-weight:500}
+.trow .pbar{grid-column:1/-1;height:3px;margin:0}
 .banner{flex:none;padding:7px 16px;background:var(--flag-soft);color:var(--flag-text);border-bottom:1px solid var(--flag-line);font-size:13px;font-weight:550}
 
 /* three columns: cases | image | text and questions */
@@ -120,14 +130,17 @@ kbd{display:inline-block;min-width:20px;padding:0 5px;border:1px solid var(--kbd
 .viewbtns button:hover:not(:disabled){background:var(--glass-btn-hover)}
 .hint{position:absolute;left:16px;bottom:14px;padding:3px 9px;border-radius:8px;font-size:11px;color:var(--ink-2);pointer-events:none}
 
-/* right: the texts, then the questions */
+/* right: the texts, then the questions. Every card is as tall as its content: the description, then the narration
+   (a long transcript scrolls inside it, up to a cap); the questions take the rest, where the help of the highlighted
+   question shows its answer definitions. When the column is short, the texts give way first: the 7 questions and
+   the note always stay whole. */
 .panel{min-width:0;min-height:0;display:flex;flex-direction:column;gap:8px;padding:10px 14px 10px 0}
 .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow)}
-.texts{flex:1 1 0;min-height:150px;overflow:hidden;display:flex;flex-direction:column;gap:8px;padding:1px}
+.texts{flex:0 1 auto;min-height:150px;overflow:hidden;display:flex;flex-direction:column;gap:8px;padding:1px}
 .texts>.card{padding:9px 13px 10px}
-.texts>.desc{flex:none;max-height:60%;overflow-y:auto}
-.texts>.narr{flex:1 1 0;min-height:84px;display:flex;flex-direction:column}
-.narr .transcript{flex:1 1 0;min-height:0;overflow-y:auto;padding-right:4px}
+.texts>.desc{flex:0 0 auto;max-height:28vh;overflow-y:auto}
+.texts>.narr{flex:0 1 auto;min-height:84px;display:flex;flex-direction:column}
+.narr .transcript{flex:0 1 auto;min-height:1.5em;max-height:36vh;overflow-y:auto;padding-right:4px}
 .desc{background:var(--desc);border-color:var(--desc-line);border-left:4px solid var(--todo)}
 .desc .eyebrow{color:var(--todo-text)}
 .caption{margin:3px 0 0;font-size:15.5px;line-height:1.5;color:var(--ink);white-space:pre-wrap}
@@ -147,9 +160,11 @@ kbd{display:inline-block;min-width:20px;padding:0 5px;border:1px solid var(--kbd
 .transcript{font-size:13.5px;line-height:1.5;color:var(--ink-2);white-space:pre-wrap}
 .transcript.empty{color:var(--muted);font-style:italic}
 
-.qs{flex:0 1 auto;max-height:74%;min-height:150px;overflow-y:auto;padding:6px 8px 8px;container-type:inline-size}
-.qlist{display:flex;flex-direction:column;gap:2px}
-.q{display:grid;grid-template-columns:132px minmax(0,1fr);align-items:center;gap:8px;padding:3px 5px;border-radius:8px;border:1px solid transparent}
+.qs{flex:1 0 auto;display:flex;flex-direction:column;padding:6px 8px 8px;container-type:inline-size}
+.qlist{flex:none;display:flex;flex-direction:column;gap:2px}
+/* on taller screens the rows are a little taller (bigger targets) */
+.q{min-height:clamp(32px,4.6vh,52px);display:grid;grid-template-columns:132px minmax(0,1fr);align-items:center;gap:8px;padding:3px 5px;border-radius:8px;border:1px solid transparent}
+.q .opts{align-self:stretch;max-height:44px}.q.many{min-height:0}.q.many .opts{max-height:none;align-self:center}.q .opt{min-height:26px}
 .q.on{background:var(--accent-soft);border-color:var(--accent-line)}
 .qh{display:flex;align-items:center;gap:6px;min-width:0;cursor:pointer;font-size:12px;line-height:1.2;font-weight:600;color:var(--ink-2)}
 .qn{flex:none;display:grid;place-items:center;width:19px;height:19px;border-radius:50%;background:var(--track);color:var(--ink-2);font-size:10.5px;font-weight:750}
@@ -164,9 +179,28 @@ kbd{display:inline-block;min-width:20px;padding:0 5px;border:1px solid var(--kbd
 .opt.sel{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .opt.sel kbd{background:transparent;border-color:currentColor;color:inherit}
 .opt.issue.sel{background:var(--flag);border-color:var(--flag);color:var(--flag-ink)}
+/* AI pre-filled answers (data/ai_prefill.js): the AI's answer that the reviewer has not confirmed yet is light and
+   dashed, in the AI color; a small "AI" badge marks the AI's answer also after the reviewer chose another one */
+.opt{position:relative}
+.opt .aib{display:none;position:absolute;top:1px;right:2px;font-style:normal;font-size:8px;font-weight:800;line-height:1;padding:1px 2px;border-radius:3px;background:var(--ai);color:var(--ai-ink);pointer-events:none}
+.opt.aimark .aib{display:block}
+.opt.ai{background:var(--ai-soft);border:1px dashed var(--ai);color:var(--ai-text)}
+.opt.ai kbd{border-color:var(--ai-line)}
+.opt.sel .aib{background:var(--accent-ink);color:var(--accent)}.opt.issue.sel .aib{color:var(--flag)}
+.q.sug .qn{background:transparent;box-shadow:inset 0 0 0 1.5px var(--ai);color:var(--ai-text)}
+.aibox{flex:none;display:flex;align-items:center;gap:8px;margin:6px 2px 0;padding:4px 5px 4px 7px;border-radius:8px;background:var(--ai-soft);border:1px solid var(--ai-line);font-size:12px;line-height:1.35;color:var(--ink-2)}
+.aitag{flex:none;font-size:10px;font-weight:800;padding:1px 5px;border-radius:5px;background:var(--ai);color:var(--ai-ink);cursor:help}
+.aitext{flex:1;min-width:0;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.aitext b{color:var(--ai-text);font-weight:700}
+.aibox .confirm{flex:none;display:flex;align-items:center;gap:5px;padding:4px 10px;font-size:12.5px;font-weight:700;background:var(--ai);border-color:var(--ai);color:var(--ai-ink)}
+.aibox .confirm:hover:not(:disabled){background:var(--ai);border-color:var(--ai);filter:brightness(1.1)}
+.aibox .confirm kbd{min-width:0;padding:0 3px;font-size:9.5px;background:transparent;border-color:currentColor;color:inherit;opacity:.85}
+.aibox .confirm:disabled{opacity:1;background:transparent;border-color:var(--done-line);color:var(--done-text)}
+.aibox .confirm:disabled kbd{display:none}
+.qhelp .ho .aib{font-style:normal;font-size:9px;font-weight:800;padding:0 3px;margin-left:4px;border-radius:3px;background:var(--ai);color:var(--ai-ink)}
 .q.skip .opts{opacity:.32}.q.skip .qh{color:var(--muted)}.q.skip .qna{display:inline-block}
 .q.skip .opt{cursor:not-allowed}
-.qhelp{margin:6px 2px 6px;padding:7px 10px;border-radius:8px;background:var(--panel-2);border:1px solid var(--border);font-size:12px;line-height:1.42;color:var(--ink-2)}
+.qhelp{flex:40 1 0;min-height:46px;max-height:max-content;overflow-y:auto;margin:6px 2px 6px;padding:7px 10px;border-radius:8px;background:var(--panel-2);border:1px solid var(--border);font-size:12px;line-height:1.42;color:var(--ink-2)}
 .qhelp .ht{font-weight:650;color:var(--ink)}
 .qhelp .hh{margin-top:2px}
 .qhelp .ho{margin:4px 0 0;padding:0;list-style:none}
@@ -180,7 +214,7 @@ kbd{display:inline-block;min-width:20px;padding:0 5px;border:1px solid var(--kbd
 /* 7 answers (Q2) in one row when the panel is wide enough, else 4 + 3 */
 @container (max-width:600px){.opts.many{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .qhelp .ho kbd{margin-right:2px}
-.note{display:block;resize:vertical;min-height:32px;max-height:160px;font-size:13px;line-height:1.4;padding:5px 9px}
+.note{flex:1 0 auto;height:32px;display:block;resize:vertical;min-height:32px;max-height:22vh;font-size:13px;line-height:1.4;padding:5px 9px}
 
 .fatal{flex:1;padding:60px 30px;text-align:center}.fatal h2{font-size:24px;margin:0 0 10px}.fatal p{max-width:720px;margin:0 auto;color:var(--ink-2);white-space:pre-wrap}
 
@@ -240,12 +274,13 @@ kbd{display:inline-block;min-width:20px;padding:0 5px;border:1px solid var(--kbd
  .work{flex:none;grid-template-columns:170px minmax(0,1fr);grid-template-areas:"side center" "side panel"}
  .side{grid-area:side;position:sticky;top:0;align-self:start;height:100vh}
  .center{grid-area:center;height:62vh;min-height:360px}
- .panel{grid-area:panel;padding:0 14px 14px}.texts,.qs{flex:none;max-height:none;overflow:visible}
- .texts>.desc{max-height:none}.texts>.narr,.narr .transcript{flex:none}.narr .transcript{max-height:30vh}
+ .panel{grid-area:panel;padding:0 14px 14px}.texts,.qs,.qlist,.q{flex:none;max-height:none;overflow:visible}
+ .texts>.desc{max-height:none}.texts>.narr,.narr .transcript{flex:none}.narr .transcript{max-height:30vh}.qhelp{flex:none;max-height:none}
 }
 /* narrow screens (< 900 px), as in Retify: the top bar wraps, and the queue moves below the case */
 @media (max-width:900px){
  .top{flex-wrap:wrap;padding:10px 16px}.brand{flex:1 1 0;min-width:200px}
+ .team{padding:8px 16px;flex-direction:column;align-items:stretch;gap:6px}#teamrows{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}.team .eyebrow{width:auto}.team .eyebrow .muted{display:inline}
  .top-right{flex:1 1 100%;flex-wrap:wrap;margin-left:0}.top-right .status{max-width:none;align-items:flex-start;flex:1 1 100%}
  .work{display:flex;flex-direction:column}
  .center{order:1;height:auto;min-height:0;padding:12px 16px 8px}.imgcard{flex:none}.stage{flex:none;width:100%;height:min(80vw,520px)}

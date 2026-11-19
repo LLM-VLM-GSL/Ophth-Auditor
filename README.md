@@ -16,13 +16,18 @@ do; see "How the page behaves" below.
 
 1. **Open https://llm-vlm-gsl.github.io/Ophth-Auditor/** in Chrome or Edge, not in a private window (it would forget
    your annotations).
-2. **Type your name.** The page finds your session in this browser (any word of the name finds it); a new session
-   needs your full name, first and last. To continue later, open the page again on the same computer and browser and
-   type the same name.
+2. **Type your name.** The page finds your session (any word of the name finds it); a new session needs your full
+   name, first and last. When the page is connected to the lab, your annotations are saved there as you make them
+   (the top bar says "Saved to the lab"), and you can continue on any computer by typing the same name. Otherwise
+   they are kept in this browser: to continue later, open the page again on the same computer and browser.
 3. **Answer the 7 questions** of each case: click an answer or press its number (`1`–`7`); the next question is
-   highlighted, and when all 7 are answered the next case still to do opens. **How to** (top right) has the full
-   guidelines and every key: `←` `→` change the case, `Space` plays the audio, `Enter` shows the image full size.
-4. **At the end of each sitting, and when you finish, click Download annotations → JSON** and send the downloaded
+   highlighted, and when all 7 are answered the next case still to do opens. When the answers are **pre-filled by an
+   AI** (marked **AI**, lighter and dashed, with the AI's short reasoning under the questions), check each one, change
+   any that is wrong (click it or press its number), then press `Enter` or **Confirm** to keep the rest; a case is done
+   only once you confirm it. **How to** (top right) has the full guidelines and every key: `←` `→` change the case,
+   `Space` plays the audio, `F` shows the image full size (`Enter` too when nothing is pre-filled).
+4. **Unless the top bar says "Saved to the lab": at the end of each sitting, and when you finish, click Download
+   annotations → JSON** and send the downloaded
    file (`ophth_audit_<your-name>_<date-time>.json`) to the study team, the way they asked. Excel and CSV are copies
    for your own use. **Load annotations** brings annotations from a downloaded file back (for example on another
    computer).
@@ -39,9 +44,9 @@ Please do not share, copy, upload or screenshot the images and texts, and do not
 |---|---|
 | `index.html`, `style.css`, `app.js` | the page |
 | `guidelines.js` | the words of the task (headline, the sentence under it, welcome, guidelines in short, introduction, notes) and the rubric: questions, answer codes, help texts (`rubric-v1`) |
-| `config.js` | settings: `server: false` (the page never calls a server API) and `encrypted: false` (the data is plaintext) |
+| `config.js` | settings: `server: false` (the page never calls a server API), `encrypted: false` (the data is plaintext) and `relay` (the lab's relay, see below; empty: none) |
 | `vendor/xlsx.full.min.js` | SheetJS Community Edition (Apache-2.0), for the Excel download and load |
-| `data/` | the audit cases: `manifest.js`, `images/`, `audio/` |
+| `data/` | the audit cases: `manifest.js`, `images/`, `audio/`; optional `ai_prefill.js`, the AI pre-filled answers (below) |
 
 The page loads `data/manifest.js` with a `<script>` tag, so the same code also runs offline, opened from disk
 (`file://`); `?data=<folder>` (relative to `index.html`) loads another data folder. With `encrypted: true` in
@@ -64,15 +69,89 @@ browser's `localStorage` under `ophth-audit:ann:<manifest_version>:<rater-slug>`
 - **A short welcome for someone new**: after the name, when that name has no annotations yet, once per name in a
   browser. Help otherwise only from How to (or `?`).
 - **The image is a small canvas**: scroll zooms at the pointer, drag moves, never smaller than it fits (up to 8×);
-  double-click, **Reset view** or `0` shows it whole; each case opens whole; `Enter` shows it full size.
+  double-click, **Reset view** or `0` shows it whole; each case opens whole; `F` shows it full size (`Enter` too when no answers are pre-filled; with them `Enter` confirms the case).
 - **The queue**: orange = to do, blue = started, green = done, red = flagged (an answer that reports a problem).
   "Go to": a number within range is a case number, otherwise a case ID or part of one. After the last question of a
   case, the next case still to do opens.
 - **Narrow screens**: below 1100 px the texts and questions go under the image and the page scrolls; below 900 px
   the top bar wraps and the queue moves below the case.
 - What differs from Retify on purpose: 7 questions per case (with keyboard answering) instead of Yes/No, the
-  description, transcript and audio next to the image, no relay (no shared progress, no disagreement tab), the JSON
-  file is the one to send, and three columns so that all 7 questions stay visible on a 1366×768 laptop.
+  description, transcript and audio next to the image, no disagreement tab, the JSON file is the one to send when
+  there is no relay, and three columns so that all 7 questions stay visible on a 1366×768 laptop.
+- **The right column** sizes each card to its content: the description, then the narration (a long transcript
+  scrolls inside it, up to about a third of the screen), then the 7 questions, whose help panel (the answer
+  definitions of the highlighted question) and note take the rest. When the column is short the texts give way
+  first; the 7 questions and the note always stay whole.
+
+## AI pre-filled answers
+
+When the data folder has `ai_prefill.js`, every case opens with the 7 answers of an LLM already chosen, and the
+reviewer confirms or changes them (the owner's choice for this audit). Build it from K runs of one model on all cases
+(export files of `agent/llm_annotate.py`):
+
+```bash
+python tools/build_ai_prefill.py run1.json run2.json run3.json            # writes web/data/ai_prefill.js
+python tools/build_ai_prefill.py run1.json run2.json run3.json --check    # exit 1 when it is out of date
+```
+
+Per case and question: the answer of more than half of the runs (2 of 3), else the first run's answer (the question
+is listed in `no_majority`); `agree` counts the runs that gave it. Skip logic as on the page: when the AI's q1 is `no`,
+q2–q6 are `na`. The note shown as "AI's reasoning" is that of the run agreeing most with these answers. The file is
+`window.AUDIT_AI = {model, runs, created, manifest_version, answers: {case_id: {q1_ophthalmic … q7_pii, agree,
+no_majority, note}}}`, loaded with a `<script>` tag after `manifest.js` (so `file://` works); a file for another
+`manifest_version` is ignored, and encrypted data never loads one.
+
+On the page, every question the reviewer has not answered shows the AI's answer, marked **AI**, lighter and dashed;
+the number keys and clicks answer as before (an answer is then the reviewer's, and the AI badge stays on the AI's
+option); `Enter` or **Confirm** turns the AI's answers that are left into the reviewer's and opens the next case
+(`F` is then full size). Skip logic follows what the case shows: the AI's q1 `no` skips q2–q6 until the reviewer
+changes q1. An untouched pre-fill is not an annotation: the case stays "to do" until it is confirmed. The annotation
+of a case keeps the AI's answers it showed (`ai`, `ai_model`; see "Exports"), so the analysis can tell a kept answer
+(answer = `ai`) from a changed one. Without `ai_prefill.js` the page, its keys and its files are as before.
+
+## The lab's relay: annotations saved as they are made (as in Retify)
+
+`relay/relay.py` (Python 3.9+, standard library; the backup also needs `huggingface_hub`) runs on a lab machine
+behind a tunnel. With its address in `config.js` (`relay`, written by the Pages workflow from the repository variable
+`AUDIT_RELAY_URL`) or in `?relay=<url>`, the page works as Retify does with its relay:
+
+- **Sessions by name.** "Who is annotating?": the sessions whose name shares a word with the typed name are offered
+  ("We found these sessions … Is one of them yours?"), otherwise a new session with the full name. Entering gives the
+  browser a key (the relay keeps only its hash); the session is remembered in the browser. **Continue without saving
+  to the lab** keeps the browser-only behaviour (name, then annotations in this browser and Download).
+- **Save as you go.** Every change of a case goes to an outbox in the browser and is sent in batches; on failure it is
+  retried with back-off (up to a minute) and when the browser is back online. The top bar says "Saved to the lab",
+  "Saving…", or in red "Not yet saved (n waiting)". On entering, the relay's and the browser's annotations are merged
+  (the later `annotated_at` wins), so a reviewer can continue on another computer.
+- **Everyone's progress** under the top bar: one card per annotator (masked name, `Tina` → `Ti*a`, completed cases,
+  bar; the reviewer's own card says "(you)"), refreshed every 15 s. Never anyone's annotations.
+- **Download annotations** still gives the same JSON, CSV and Excel files (a copy).
+
+The relay checks every annotation (and the AI's answers it carries, `ai`, `ai_model`) against the rubric (`guidelines_url`, the page's `guidelines.js`) and the case ids
+against the case list (`manifest_url`, `data/manifest.js`), both read again every hour (the last copy offline);
+skip logic as on the page. It allows only the `origins` of its settings (CORS; `http://127.0.0.1:*` for tests),
+limits requests per IP (10 a second, 20000 annotations and 50 new sessions a day) and request size (1 MB), keeps an
+append-only log per session and the current state in `data_dir` (outside the repository), and every
+`hf.every_minutes` commits the changed files to a private Hugging Face dataset when `hf.repo` is set (token from
+`hf.token_env` or `hf.token_file`, never printed; the key hashes stay on the machine).
+
+```bash
+cp relay/relay.local.example.json relay/relay.local.json      # then fill in the URLs, data_dir, origins, hf
+python relay/relay.py                                         # http://127.0.0.1:8097/api/ophth-audit/status
+python relay/relay.py relay/relay.local.json --export <folder>   # one ophth_audit_<slug>_<YYYYMMDD-HHMM>.json per reviewer
+```
+
+The export is the page's JSON export, so `analyze_audit.py` reads it unchanged (sessions under the same name are
+merged, the later annotation per case). API, under the prefix (`/api/ophth-audit`): `GET /status`,
+`POST /sessions/find {name}`, `POST /sessions {name}`, `POST /sessions/enter {id}`,
+`GET /annotations?set=<manifest_version>&session=<id>` and `POST /annotations {set, session, annotations: [...]}`
+(header `X-Audit-Key`), `GET /progress?set=<manifest_version>[&session=<id>]`.
+
+**On a Mac** (once, with the owner's go-ahead): `sudo relay/deploy/install.sh <user>` makes `relay/.venv` from
+`/usr/bin/python3`, installs the LaunchDaemon `org.ophthaudit.relay` (`relay/deploy/org.ophthaudit.relay.plist`, runs
+as `<user>`, restarts on failure, log in `~/Library/Logs/ophth-audit-relay.log`) and checks `/status`. Then the
+tunnel's public hostname gets a path rule `^/api/ophth-audit/` to `http://localhost:8097`, and
+`gh variable set AUDIT_RELAY_URL --body "https://<lab host>/api/ophth-audit"` before the next Pages run.
 
 ## For LLM agents
 
@@ -117,10 +196,16 @@ the analysis script; earlier files may have a role: `ophthalmologist`, `optometr
 
 When `q1_ophthalmic` is `no`, `q2`–`q6` are recorded as `na`. Unanswered is an empty string.
 
+**With AI pre-filled answers** each record also has, after `time_spent_s`, `"ai": {"q1_ophthalmic": …, …,
+"q7_pii": …}` (the AI's answer the case showed for each question; all `""` for a case never opened) and
+`"ai_model"` (e.g. `"openai/gpt-6-luna"`). A question's answer equal to `ai[q]` is a kept AI answer, any other a
+changed one. A case counts as annotated only once every answer is the reviewer's.
+
 **CSV and Excel**: one row per case, columns `no, case_id, q1_ophthalmic, q2_modality, q3_crop, q4_image_text,
 q5_faithful, q6_clinical, q7_pii, note, annotated_at, time_spent_s`; the Excel file has a second sheet `rater`
 (`field, value`: `name, role, years_experience, manifest_version, rubric_version, exported_at`). A CSV file has no
-rater block, so its rater is the slug in the file name.
+rater block, so its rater is the slug in the file name. With AI pre-filled answers the columns `ai_q1_ophthalmic, …,
+ai_q7_pii, ai_model` follow `time_spent_s`.
 
 **Rater slug**: lowercase the full name, replace every run of characters outside `[a-z0-9]` with one `-`, strip
 leading and trailing `-`, keep at most 40 characters; empty gives `rater`. Example: `Dr. Jane O'Neil` →
@@ -173,8 +258,15 @@ or Edge for the browser tests.
 
 ```bash
 python tests/test_encrypt.py                       # round trip of the encryption tool on the dummy fixture
+python tests/test_ai_prefill.py                    # tools/build_ai_prefill.py: majority, ties, skip logic, fixture
+python tests/test_relay.py                         # the relay: sessions, keys, validation, later wins, log, progress,
+                                                   #   CORS and limits, backup, export (Python 3.9+)
+node tests/e2e_relay.mjs [outdir]                  # the page with a local relay: sessions by name, save as you go,
+                                                   #   resume in a fresh browser, progress strip, outbox while the
+                                                   #   relay is down, Continue without saving, export
 node tests/e2e.mjs plain [outdir]                  # file:// with the plaintext fixture: the whole flow (name, welcome,
-                                                   #   keys, skip logic, timing, downloads, load/merge), the Retify
+                                                   #   keys, skip logic, timing, downloads, load/merge, AI pre-filled
+                                                   #   answers: shown, changed, confirmed, in the files), the Retify
                                                    #   behaviour (eye switch, How to, plain words), layout at
                                                    #   1366x657 bright and dark, 1000, 820 and 420 px
 node tests/e2e.mjs real <outdir> [code file]       # serves web/ as it is on http://127.0.0.1 (like GitHub Pages) and
@@ -188,7 +280,8 @@ python tests/serve.py                              # this site at http://127.0.0
 
 Environment variables: `PYTHON` (a Python with the packages above), `CHROME` (browser path). Keep every `<outdir>`
 outside the repository: it receives downloads and screenshots. `tests/fixture/data`
-holds six dummy cases (drawn images, silent audio) made by `tests/make_fixture.py`.
+holds six dummy cases (drawn images, silent audio) made by `tests/make_fixture.py`, and `ai_prefill.js` built from
+three made-up LLM runs in `tests/fixture/ai_runs/` (`python tests/make_fixture.py --ai-only` rebuilds only these).
 
 ## Security model and its limits
 

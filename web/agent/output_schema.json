@@ -397,7 +397,7 @@
         },
         "manifest_version": {
           "type": "string",
-          "description": "the manifest_version of the case list (v1-2026-11-18)"
+          "description": "the manifest_version of the case list (train-v1-2026-11-18)"
         },
         "exported_at": {
           "type": "string",

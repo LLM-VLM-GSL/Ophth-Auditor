@@ -3,7 +3,7 @@
   "what": "Machine-readable entry to the static audit page. Human raters judge, for each case, one ophthalmic image, the text description paired with it, and the narration (transcript) it was derived from, answering 7 questions. An automated rater (an LLM through an API) can answer the same cases and produce the same export file. There is no server: fetch these files, answer locally, and send the export file to the study team. LLM ratings are a pilot comparison and are analysed separately from the clinicians' audit.",
   "agent_spec_version": "agent-spec-v1",
   "rubric_version": "rubric-v1",
-  "manifest_version": "v1-2026-11-18",
+  "manifest_version": "train-v1-2026-11-18",
   "n_cases": 100,
   "site": "https://llm-vlm-gsl.github.io/Ophth-Auditor/",
   "links": {
@@ -14,9 +14,9 @@
     "page": "../index.html"
   },
   "sha256": {
-    "rubric.json": "a20487d4953b7f3c8f266d5c933ca476a90e2e0703cd372b5a9d35bd41abb7b9",
-    "tasks.jsonl": "0a08e0049a63b7f4843062ae4a1b383c9f6f3efb064c71d3e53f4441cacaf0d1",
-    "output_schema.json": "b1bdc6864a5d9eb02658a95bacbc922737cef0433e9b308dccaade43dcdf6d34"
+    "rubric.json": "6dbf3172b0e203b257c0c37bbdfabefcabaa4c652e8eace60916d49284c24f32",
+    "tasks.jsonl": "366e8523df2fbdce6a5fdc1ab351426067da0bc701a6327919bb96026bd8d6c4",
+    "output_schema.json": "aac96fb56c230f65b72d05046c4ad6e229087dd2cf39ebcd13716679e68b92b5"
   },
   "media": "Relative media paths in tasks.jsonl ('image', 'audio') are relative to the site root (the folder of index.html, one level above this file); 'image_url' / 'audio_url' are absolute.",
   "export": {
@@ -38,7 +38,7 @@
       "tool": "ophth-audit",
       "tool_version": "1.0",
       "rubric_version": "rubric-v1",
-      "manifest_version": "v1-2026-11-18"
+      "manifest_version": "train-v1-2026-11-18"
     },
     "rater": {
       "name": "for an LLM: '<provider>/<model>' (with '#<k>' for repeated runs of the same model)",
@@ -55,7 +55,7 @@
       "tool": "ophth-audit",
       "tool_version": "1.0",
       "rubric_version": "rubric-v1",
-      "manifest_version": "v1-2026-11-18",
+      "manifest_version": "train-v1-2026-11-18",
       "exported_at": "2026-11-18T10:31:05-07:00",
       "rater": {
         "name": "anthropic/claude-opus-5-5",
@@ -63,7 +63,7 @@
         "years_experience": null
       },
       "annotations": {
-        "A001": {
+        "B001": {
           "q1_ophthalmic": "yes",
           "q2_modality": "oct",
           "q3_crop": "good",
