@@ -15,7 +15,7 @@
   },
   "sha256": {
     "rubric.json": "e180f3a565876e4526038f71f54aea19eb0af6dd9e214fc3021e8c4a2c561eb1",
-    "tasks.jsonl": "3e4739462c91a81d971e8ffa8c7940410bab4f375fe624acf899065888aa78c3",
+    "tasks.jsonl": "c7664c22bb2c9067a1dd16ccefd725ae5714f6c1abbb515c8cf576eff5439f45",
     "output_schema.json": "616d33db28d3ff04ad27abd7645e2941b91d628388892c660789968cb6fd1bb9"
   },
   "media": "Relative media paths in tasks.jsonl ('image', 'audio') are relative to the site root (the folder of index.html, one level above this file); 'image_url' / 'audio_url' are absolute.",
@@ -63,7 +63,7 @@
         "years_experience": null
       },
       "annotations": {
-        "T264": {
+        "T265": {
           "q1_ophthalmic": "yes",
           "q2_modality": "oct",
           "q3_crop": "good",
