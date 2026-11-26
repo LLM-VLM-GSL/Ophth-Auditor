@@ -125,7 +125,7 @@ def main():
         js = d
         check("JSON top-level keys (in order; an LLM batch may add a trailing \"run\" block)", [k for k in d.keys() if k != "run"] == TOP, list(d.keys()))
         check("JSON tool / tool_version", d["tool"] == TOOL and d["tool_version"] == TOOL_VERSION, (d["tool"], d["tool_version"]))
-        check("JSON rubric_version", d["rubric_version"] == "rubric-v1", d["rubric_version"])
+        check("JSON rubric_version", str(d["rubric_version"]).startswith("rubric-v1"), d["rubric_version"])
         check("JSON exported_at ISO-8601", iso_ok(d["exported_at"]), d["exported_at"])
         r = d["rater"]
         check("JSON rater keys", list(r.keys()) == ["name", "role", "years_experience"], list(r.keys()))
@@ -199,7 +199,7 @@ def main():
         check("XLSX rater sheet rows in the documented order", list(rs["field"]) == RATER_ROWS, list(rs["field"]))
         kv = dict(zip(rs["field"], rs["value"]))
         check("XLSX file-name slug == slugify(rater name)", slug == slugify(kv.get("name", "")), (slug, kv.get("name")))
-        check("XLSX rubric_version / exported_at", kv.get("rubric_version") == "rubric-v1" and iso_ok(kv.get("exported_at")), kv)
+        check("XLSX rubric_version / exported_at", str(kv.get("rubric_version")).startswith("rubric-v1") and iso_ok(kv.get("exported_at")), kv)
         if exp:
             ye, want_y = str(kv.get("years_experience") or "").strip(), exp["rater"]["years_experience"]
             check("XLSX rater as expected", kv.get("name") == exp["rater"]["name"] and (kv.get("role") or "") == exp["rater"]["role"]

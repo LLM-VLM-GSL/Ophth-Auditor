@@ -13,20 +13,18 @@
           "type": "string",
           "enum": [
             "yes",
-            "no",
-            "unsure"
+            "no"
           ]
         },
         "q2_modality": {
           "type": "string",
           "enum": [
+            "multi",
             "oct",
             "cfp",
-            "uwf",
             "angio",
             "other",
-            "multi",
-            "unsure",
+            "uwf",
             "na"
           ]
         },
@@ -54,7 +52,6 @@
             "full",
             "partial",
             "unsupported",
-            "cant_judge",
             "na"
           ]
         },
@@ -62,9 +59,7 @@
           "type": "string",
           "enum": [
             "correct",
-            "minor",
             "major",
-            "cant_judge",
             "na"
           ]
         },
@@ -128,13 +123,12 @@
             "properties": {
               "q2_modality": {
                 "enum": [
+                  "multi",
                   "oct",
                   "cfp",
-                  "uwf",
                   "angio",
                   "other",
-                  "multi",
-                  "unsure"
+                  "uwf"
                 ]
               },
               "q3_crop": {
@@ -155,16 +149,13 @@
                 "enum": [
                   "full",
                   "partial",
-                  "unsupported",
-                  "cant_judge"
+                  "unsupported"
                 ]
               },
               "q6_clinical": {
                 "enum": [
                   "correct",
-                  "minor",
-                  "major",
-                  "cant_judge"
+                  "major"
                 ]
               }
             }
@@ -202,21 +193,19 @@
           "enum": [
             "",
             "yes",
-            "no",
-            "unsure"
+            "no"
           ]
         },
         "q2_modality": {
           "type": "string",
           "enum": [
             "",
+            "multi",
             "oct",
             "cfp",
-            "uwf",
             "angio",
             "other",
-            "multi",
-            "unsure",
+            "uwf",
             "na"
           ]
         },
@@ -247,7 +236,6 @@
             "full",
             "partial",
             "unsupported",
-            "cant_judge",
             "na"
           ]
         },
@@ -256,9 +244,7 @@
           "enum": [
             "",
             "correct",
-            "minor",
             "major",
-            "cant_judge",
             "na"
           ]
         },
@@ -334,13 +320,12 @@
               "q2_modality": {
                 "enum": [
                   "",
+                  "multi",
                   "oct",
                   "cfp",
-                  "uwf",
                   "angio",
                   "other",
-                  "multi",
-                  "unsure"
+                  "uwf"
                 ]
               },
               "q3_crop": {
@@ -364,17 +349,14 @@
                   "",
                   "full",
                   "partial",
-                  "unsupported",
-                  "cant_judge"
+                  "unsupported"
                 ]
               },
               "q6_clinical": {
                 "enum": [
                   "",
                   "correct",
-                  "minor",
-                  "major",
-                  "cant_judge"
+                  "major"
                 ]
               }
             }
@@ -393,11 +375,11 @@
           "const": "1.0"
         },
         "rubric_version": {
-          "const": "rubric-v1"
+          "const": "rubric-v1-table"
         },
         "manifest_version": {
           "type": "string",
-          "description": "the manifest_version of the case list (train-v1-2026-11-18)"
+          "description": "the manifest_version of the case list (test100-hq-2026-11-26)"
         },
         "exported_at": {
           "type": "string",

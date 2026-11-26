@@ -1,1778 +1,772 @@
 // AI pre-filled answers of the audit page, written by tools/build_ai_prefill.py: do not edit by hand.
-// The majority answer of 5 runs of one model per case and question (README, "AI pre-filled answers").
+// The majority answer of 3 runs of one model per case and question (README, "AI pre-filled answers").
 window.AUDIT_AI = {
- "model": "5-model panel (gpt-6-luna, gpt-5.6-sol, gpt-5.5, gpt-5.4, gpt-5.6-terra)",
- "runs": 5,
- "created": "2026-11-18T18:53:10-07:00",
- "manifest_version": "train-v1-2026-11-18",
+ "model": "3-judge panel (gpt-6-luna, gpt-5.6-sol, gpt-5.6-terra)",
+ "runs": 3,
+ "created": "2026-11-26T01:06:46-07:00",
+ "manifest_version": "test100-hq-2026-11-26",
  "answers": {
-  "B001": {
+  "T264": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "cfp",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "major",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The fundus shows white lesions, but vein obstruction and scar tissue are not clearly established from the image."
+  },
+  "T316": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "multi",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The fundus photo and OCT are visible; subretinal fluid and PED are labeled, but occult CNV is not directly established by these panels."
+  },
+  "T082": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "uwf",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The widefield fundus shows the pigmented lesion with a lighter halo and orange coloration; a small name-like watermark is visible at the bottom."
+  },
+  "T341": {
    "q1_ophthalmic": "yes",
    "q2_modality": "other",
    "q3_crop": "good",
-   "q4_image_text": "partial",
-   "q5_faithful": "full",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 3,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The paired grayscale images appear to be autofluorescence; they do not show subretinal fluid. A Zoom logo is visible, but it is not patient-identifying."
-  },
-  "B002": {
-   "q1_ophthalmic": "no",
-   "q2_modality": "na",
-   "q3_crop": "na",
-   "q4_image_text": "na",
-   "q5_faithful": "na",
-   "q6_clinical": "na",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "This is a dental imaging software screenshot, not an ophthalmic clinical image. A logo/watermark is visible; no patient-identifying information is apparent."
-  },
-  "B003": {
-   "q1_ophthalmic": "no",
-   "q2_modality": "na",
-   "q3_crop": "na",
-   "q4_image_text": "na",
-   "q5_faithful": "na",
-   "q6_clinical": "na",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The image is a stylized illustration, not a clinical ophthalmic image."
-  },
-  "B004": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "cfp",
-   "q3_crop": "good",
-   "q4_image_text": "partial",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 3,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "Standard-field color fundus photograph is well preserved, but macular edema is not visibly established; the narration discusses fundus-camera features without mentioning edema."
-  },
-  "B005": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "multi",
-   "q3_crop": "partial",
-   "q4_image_text": "partial",
-   "q5_faithful": "full",
-   "q6_clinical": "minor",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 4,
-    "q2_modality": 4,
-    "q3_crop": 3,
-    "q4_image_text": 3,
-    "q5_faithful": 1,
-    "q6_clinical": 3,
-    "q7_pii": 5
-   },
-   "no_majority": [
-    "q5_faithful"
-   ],
-   "note": "The slide is titled “Cuticular Drusen,” and the small fundus/OCT panels do not clearly show the described deposits. The narration does mention subretinal drusenoid deposits and reflective changes; “hypoechoic” is imprecise for OCT."
-  },
-  "B006": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "cfp",
-   "q3_crop": "good",
-   "q4_image_text": "partial",
-   "q5_faithful": "full",
-   "q6_clinical": "minor",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 4,
-    "q6_clinical": 3,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "Drusen, macular atrophy, and a circled hemorrhagic area are visible, but photoreceptor irregularity and retinal thinning are OCT-level findings not directly assessable on this color fundus photograph."
-  },
-  "B007": {
-   "q1_ophthalmic": "no",
-   "q2_modality": "na",
-   "q3_crop": "na",
-   "q4_image_text": "na",
-   "q5_faithful": "na",
-   "q6_clinical": "na",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The image shows a gross aorta-and-kidney specimen, not an ophthalmic clinical image."
-  },
-  "B008": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "oct",
-   "q3_crop": "partial",
    "q4_image_text": "full",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
    "q7_pii": "no",
    "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
     "q4_image_text": 2,
     "q5_faithful": 3,
     "q6_clinical": 3,
     "q7_pii": 3
    },
-   "no_majority": [
-    "q4_image_text"
-   ],
-   "note": "OCT panels show macular interface/hole-type changes without retinal detachment; narration discusses macular hole mimickers, not detachment or scar. A video-call presenter face/name overlay is visible but not patient-identifying."
-  },
-  "B009": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "oct",
-   "q3_crop": "good",
-   "q4_image_text": "none",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 4,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
    "no_majority": [],
-   "note": "The panels show AO-OCT imagery labeled COST/ROST, not retinal detachment or scar tissue. A Zoom watermark is visible."
+   "note": "The image is a well-preserved histologic section with polygonal neoplastic cells; no patient-identifying information is visible."
   },
-  "B010": {
-   "q1_ophthalmic": "no",
-   "q2_modality": "na",
-   "q3_crop": "na",
-   "q4_image_text": "na",
-   "q5_faithful": "na",
-   "q6_clinical": "na",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 4
-   },
-   "no_majority": [],
-   "note": "This is an eye-anatomy teaching slide with diagrams, not a clinical image. Video-call participant tiles are visible but do not identify a patient."
-  },
-  "B011": {
+  "T454": {
    "q1_ophthalmic": "yes",
-   "q2_modality": "angio",
-   "q3_crop": "partial",
-   "q4_image_text": "partial",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "yes",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 4,
-    "q3_crop": 4,
-    "q4_image_text": 3,
-    "q5_faithful": 5,
-    "q6_clinical": 3,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "Grayscale widefield angiographic image shows choroidal dark spots, not macular edema/leakage; lower-right logos/Zoom overlay, and a “Nov 19” image date at top right is patient-identifying."
-  },
-  "B012": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "other",
+   "q2_modality": "uwf",
    "q3_crop": "good",
    "q4_image_text": "partial",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "yes",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 3,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 4,
-    "q7_pii": 4
-   },
-   "no_majority": [],
-   "note": "Anterior segment surgical eye image after trauma/lens removal; PVD is not visible or narrated. Patient eye-region photo is visible; Zoom/institution-style logos are also present but not PII."
-  },
-  "B013": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "angio",
-   "q3_crop": "good",
-   "q4_image_text": "partial",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 3,
-    "q5_faithful": 4,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "Image shows fluorescein angiography in three fields, but macular edema and sub-ILM hemorrhage are not clearly visible; macular edema is not supported by narration. No patient-identifying information visible."
-  },
-  "B014": {
-   "q1_ophthalmic": "unsure",
-   "q2_modality": "unsure",
-   "q3_crop": "bad",
-   "q4_image_text": "none",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 3,
-    "q2_modality": 2,
-    "q3_crop": 5,
-    "q4_image_text": 3,
-    "q5_faithful": 5,
-    "q6_clinical": 4,
-    "q7_pii": 4
-   },
-   "no_majority": [
-    "q2_modality"
-   ],
-   "note": "The tiny, blurred crop is not recognizable as retinal imaging and does not demonstrate retinal thickening or subretinal fluid; the IVF narration provides no ophthalmic support."
-  },
-  "B015": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "angio",
-   "q3_crop": "good",
-   "q4_image_text": "partial",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 4,
-    "q4_image_text": 3,
-    "q5_faithful": 3,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The angiogram labels bulb-like dilation and telangiectatic vessels, not diffuse choroidal hyperfluorescence or late leakage. A small presenter inset and Zoom watermark are visible; neither is patient-identifying."
-  },
-  "B016": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "cfp",
-   "q3_crop": "partial",
-   "q4_image_text": "none",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 4,
-    "q4_image_text": 4,
-    "q5_faithful": 4,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The fundus photograph shows a large elevated temporal retinal/chorioretinal lesion, not cornea; the optic disc is nasal and lacks the claimed traction. Surrounding slide text and slide number 29 are visible."
-  },
-  "B017": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "oct",
-   "q3_crop": "good",
-   "q4_image_text": "none",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 4,
-    "q3_crop": 3,
-    "q4_image_text": 4,
-    "q5_faithful": 5,
-    "q6_clinical": 4,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "Anterior-segment OCT appears to show a post-trabeculectomy filtering bleb/scleral flap, not trabecular meshwork glaucomatous alteration. A small device/video logo is visible; no patient identifiers."
-  },
-  "B018": {
-   "q1_ophthalmic": "no",
-   "q2_modality": "na",
-   "q3_crop": "na",
-   "q4_image_text": "na",
-   "q5_faithful": "na",
-   "q6_clinical": "na",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The image is entirely black/blank, with no visible clinical image or patient-identifying information."
-  },
-  "B019": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "cfp",
-   "q3_crop": "partial",
-   "q4_image_text": "none",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 4,
-    "q4_image_text": 3,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "Slide shows color fundus images of small retinoblastoma lesions, not a retinal detachment with subretinal seeds. Zoom/presenter overlay and institutional/watermark text are visible but not patient-identifying."
-  },
-  "B020": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "other",
-   "q3_crop": "good",
-   "q4_image_text": "full",
    "q5_faithful": "full",
    "q6_clinical": "correct",
-   "q7_pii": "yes",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 4,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "Slit-lamp eye-region photograph shows corneal epithelial microcystic/irregular changes consistent with epithelial basement membrane dystrophy. The identifiable eye region is visible; a Slit Lamp Studios watermark is at lower left."
-  },
-  "B021": {
-   "q1_ophthalmic": "no",
-   "q2_modality": "na",
-   "q3_crop": "na",
-   "q4_image_text": "na",
-   "q5_faithful": "na",
-   "q6_clinical": "na",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "This is a slide about cell segmentation with tissue images, not an ophthalmic clinical image; no patient-identifying information is visible."
-  },
-  "B022": {
-   "q1_ophthalmic": "no",
-   "q2_modality": "na",
-   "q3_crop": "na",
-   "q4_image_text": "na",
-   "q5_faithful": "na",
-   "q6_clinical": "na",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The image is a labeled retinal anatomy diagram, not a clinical image; a Zoom logo is visible."
-  },
-  "B023": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "cfp",
-   "q3_crop": "partial",
-   "q4_image_text": "partial",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "correct",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 4,
-    "q5_faithful": 3,
-    "q6_clinical": 2,
-    "q7_pii": 3
-   },
-   "no_majority": [
-    "q6_clinical"
-   ],
-   "note": "Two fundus photographs are shown; the video-call overlay partly covers the right image. The absent midline structures are not visible here. A presenter label and logo are visible, not patient-identifying."
-  },
-  "B024": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "cfp",
-   "q3_crop": "partial",
-   "q4_image_text": "none",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 3,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "This is a color fundus image described in the narration as the undamaged right retina; black areas obscure parts of the image."
-  },
-  "B025": {
-   "q1_ophthalmic": "no",
-   "q2_modality": "na",
-   "q3_crop": "na",
-   "q4_image_text": "na",
-   "q5_faithful": "na",
-   "q6_clinical": "na",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 4,
-    "q2_modality": 4,
-    "q3_crop": 4,
-    "q4_image_text": 4,
-    "q5_faithful": 4,
-    "q6_clinical": 4,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "This is primarily a text-and-table slide with embedded clinical images; a small logo is visible at the lower right."
-  },
-  "B026": {
-   "q1_ophthalmic": "no",
-   "q2_modality": "na",
-   "q3_crop": "na",
-   "q4_image_text": "na",
-   "q5_faithful": "na",
-   "q6_clinical": "na",
    "q7_pii": "no",
    "agree": {
     "q1_ophthalmic": 3,
     "q2_modality": 3,
-    "q3_crop": 3,
-    "q4_image_text": 3,
-    "q5_faithful": 3,
-    "q6_clinical": 3,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The image is a slide of brain imaging, not an ophthalmic clinical image. A Zoom watermark is visible."
-  },
-  "B027": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "other",
-   "q3_crop": "good",
-   "q4_image_text": "partial",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 1,
-    "q3_crop": 4,
-    "q4_image_text": 4,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [
-    "q2_modality"
-   ],
-   "note": "The fundus image is visible, but macular edema is not evident. MacBook Pro branding is visible; it is not patient-identifying."
-  },
-  "B028": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "cfp",
-   "q3_crop": "good",
-   "q4_image_text": "none",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 3,
-    "q5_faithful": 5,
-    "q6_clinical": 4,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The panels are fundus photographs centered near the optic discs; macular edema is not evident. An institutional logo is visible at the lower right."
-  },
-  "B029": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "oct",
-   "q3_crop": "good",
-   "q4_image_text": "none",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 4,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The visible scan is an anterior-segment OCT, not an optic-disc image; no patient-identifying information is visible."
-  },
-  "B030": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "oct",
-   "q3_crop": "partial",
-   "q4_image_text": "partial",
-   "q5_faithful": "full",
-   "q6_clinical": "minor",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 3,
-    "q3_crop": 5,
-    "q4_image_text": 3,
-    "q5_faithful": 4,
-    "q6_clinical": 3,
-    "q7_pii": 4
-   },
-   "no_majority": [],
-   "note": "Composite OCT glaucoma analysis is visible but small/cluttered; BMO rim and RNFL claims are supported by narration, though 'Double Ejiba' is garbled/imprecise terminology. No readable patient identifiers visible."
-  },
-  "B031": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "other",
-   "q3_crop": "good",
-   "q4_image_text": "partial",
-   "q5_faithful": "full",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 4,
-    "q6_clinical": 2,
-    "q7_pii": 5
-   },
-   "no_majority": [
-    "q6_clinical"
-   ],
-   "note": "The crop shows bilateral infrared images with macular stippling; it does not show OCT evidence of deposits/RPE thickening or a hypoautofluorescence image."
-  },
-  "B032": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "oct",
-   "q3_crop": "good",
-   "q4_image_text": "partial",
-   "q5_faithful": "full",
-   "q6_clinical": "minor",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 4,
-    "q5_faithful": 4,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The two panels are PSOCT maps, not separate imaging modalities. The bowing is supported by the narration, but the specific layer labels are not clearly discernible in the image; “interlimiting membrane” is imprecise terminology."
-  },
-  "B033": {
-   "q1_ophthalmic": "no",
-   "q2_modality": "na",
-   "q3_crop": "na",
-   "q4_image_text": "na",
-   "q5_faithful": "na",
-   "q6_clinical": "na",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The image is an anatomical eye illustration, not a clinical image; no patient-identifying information is visible."
-  },
-  "B034": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "cfp",
-   "q3_crop": "bad",
-   "q4_image_text": "partial",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 4,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 3,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The fundus images are severely cropped. The narration discusses hypertensive retinopathy, not arterial tortuosity syndrome."
-  },
-  "B035": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "multi",
-   "q3_crop": "partial",
-   "q4_image_text": "partial",
-   "q5_faithful": "full",
-   "q6_clinical": "minor",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 3,
-    "q6_clinical": 3,
-    "q7_pii": 4
-   },
-   "no_majority": [],
-   "note": "The OCT is visible, but macular hole and detachment are not unequivocal in this crop. Conference branding and a Zoom watermark are visible; neither is patient-identifying."
-  },
-  "B036": {
-   "q1_ophthalmic": "no",
-   "q2_modality": "na",
-   "q3_crop": "na",
-   "q4_image_text": "na",
-   "q5_faithful": "na",
-   "q6_clinical": "na",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "This is an illustrative eye diagram with overlaid text, not a real clinical image; no patient-identifying information is visible."
-  },
-  "B037": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "cfp",
-   "q3_crop": "good",
-   "q4_image_text": "full",
-   "q5_faithful": "full",
-   "q6_clinical": "correct",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "Both fundus photographs show optic discs; the left disc appears to have greater cupping, consistent with the narrated 20% and 40% estimates."
-  },
-  "B038": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "other",
-   "q3_crop": "good",
-   "q4_image_text": "partial",
-   "q5_faithful": "full",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 4,
-    "q2_modality": 4,
-    "q3_crop": 4,
-    "q4_image_text": 3,
-    "q5_faithful": 3,
-    "q6_clinical": 3,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "Orbital cross-sectional imaging appears MRI rather than CT; choroidal detachment may be visible, but 'hyperdense' CT wording is not appropriate. No patient-identifying information visible."
-  },
-  "B039": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "uwf",
-   "q3_crop": "good",
-   "q4_image_text": "full",
-   "q5_faithful": "full",
-   "q6_clinical": "minor",
-   "q7_pii": "yes",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 3,
-    "q4_image_text": 4,
-    "q5_faithful": 4,
-    "q6_clinical": 3,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "A date-like text overlay (“05/024”) is visible near the bottom of the image."
-  },
-  "B040": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "cfp",
-   "q3_crop": "good",
-   "q4_image_text": "partial",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 3,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "Fundus hemorrhages support BRVO, but scleral thickening is neither visible nor supported by the narration; blood-retinal barrier disruption is also not directly demonstrated. Diagnostic title overlay is visible; no patient identifiers."
-  },
-  "B041": {
-   "q1_ophthalmic": "no",
-   "q2_modality": "na",
-   "q3_crop": "na",
-   "q4_image_text": "na",
-   "q5_faithful": "na",
-   "q6_clinical": "na",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "This is an illustrative eye cross-section, not a clinical image; no patient-identifying information is visible."
-  },
-  "B042": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "cfp",
-   "q3_crop": "partial",
-   "q4_image_text": "partial",
-   "q5_faithful": "full",
-   "q6_clinical": "minor",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 4,
-    "q6_clinical": 3,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The fundus supports vascular tortuosity/dilatation, but decreased RNFL thickness cannot be confidently established from this color photograph. Large overlaid objective text partly obscures the retina; no patient identifiers are visible."
-  },
-  "B043": {
-   "q1_ophthalmic": "no",
-   "q2_modality": "na",
-   "q3_crop": "na",
-   "q4_image_text": "na",
-   "q5_faithful": "na",
-   "q6_clinical": "na",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 4,
-    "q2_modality": 4,
-    "q3_crop": 4,
-    "q4_image_text": 4,
-    "q5_faithful": 4,
-    "q6_clinical": 4,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The image shows a stylized world map, not an ophthalmic clinical image; no patient-identifying information is visible."
-  },
-  "B044": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "angio",
-   "q3_crop": "good",
-   "q4_image_text": "none",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 4,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The image is a single ultra-widefield angiogram labeled as showing nonperfusion in RVO, not multi-panel images of vasculitis or uveitis."
-  },
-  "B045": {
-   "q1_ophthalmic": "no",
-   "q2_modality": "na",
-   "q3_crop": "na",
-   "q4_image_text": "na",
-   "q5_faithful": "na",
-   "q6_clinical": "na",
-   "q7_pii": "yes",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 3
-   },
-   "no_majority": [],
-   "note": "A partial person's face is visible at the upper-right edge."
-  },
-  "B046": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "cfp",
-   "q3_crop": "good",
-   "q4_image_text": "partial",
-   "q5_faithful": "full",
-   "q6_clinical": "minor",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 3,
-    "q6_clinical": 4,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The macular area is visible, but the claimed retinal injury and scar are subtle; “macula densa” is imprecise terminology for a retinal location."
-  },
-  "B047": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "multi",
-   "q3_crop": "partial",
-   "q4_image_text": "partial",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 4,
-    "q4_image_text": 5,
-    "q5_faithful": 4,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The OCT is compatible with myopic traction changes, but scar tissue and subretinal hemorrhage are not clearly visible; a right-side overlay obscures part of the panels."
-  },
-  "B048": {
-   "q1_ophthalmic": "no",
-   "q2_modality": "na",
-   "q3_crop": "na",
-   "q4_image_text": "na",
-   "q5_faithful": "na",
-   "q6_clinical": "na",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 4,
-    "q2_modality": 4,
-    "q3_crop": 4,
-    "q4_image_text": 4,
-    "q5_faithful": 4,
-    "q6_clinical": 4,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "This is primarily an educational text slide, with a small angiography inset; no patient-identifying information is visible."
-  },
-  "B049": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "other",
-   "q3_crop": "partial",
-   "q4_image_text": "partial",
-   "q5_faithful": "cant_judge",
-   "q6_clinical": "cant_judge",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 4,
-    "q4_image_text": 4,
-    "q5_faithful": 4,
-    "q6_clinical": 3,
-    "q7_pii": 4
-   },
-   "no_majority": [],
-   "note": "This appears to be a surgical view, but a large black overlay obscures part of it and the retinal findings are not clear. The transcript is too fragmentary to assess support."
-  },
-  "B050": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "uwf",
-   "q3_crop": "partial",
-   "q4_image_text": "partial",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 3,
-    "q3_crop": 4,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 4,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The slide shows retinal images after ROP laser treatment and labels laser scars, but retinal detachment is not evident. The date in the top bar appears to be a meeting date, not a patient date."
-  },
-  "B051": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "angio",
-   "q3_crop": "partial",
-   "q4_image_text": "partial",
-   "q5_faithful": "full",
-   "q6_clinical": "correct",
-   "q7_pii": "yes",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 4,
-    "q5_faithful": 4,
-    "q6_clinical": 3,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The angiographic image is small within a largely blank blue frame, and its monochrome view cannot show the described yellow coloration. A date/time overlay appears at the lower-left of the image."
-  },
-  "B052": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "cfp",
-   "q3_crop": "partial",
-   "q4_image_text": "partial",
-   "q5_faithful": "full",
-   "q6_clinical": "minor",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 4,
-    "q4_image_text": 5,
-    "q5_faithful": 3,
-    "q6_clinical": 3,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "Color fundus photo with orange cast; narration supports an artifact and small lesion near fovea, but the crop/black obstruction makes the lesion and foveal details hard to see. No patient identifiers visible."
-  },
-  "B053": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "other",
-   "q3_crop": "partial",
-   "q4_image_text": "partial",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "yes",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 3,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The operative eye shows prolapsed iris, but lens dislocation is not established; narration says its status is unknown. Patient eye-region photo is visible. Surgeon name and MECG logo are also overlaid."
-  },
-  "B054": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "unsure",
-   "q3_crop": "bad",
-   "q4_image_text": "partial",
-   "q5_faithful": "cant_judge",
-   "q6_clinical": "cant_judge",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 4,
-    "q2_modality": 2,
-    "q3_crop": 4,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [
-    "q2_modality"
-   ],
-   "note": "The tiny, severely blurred orange-yellow clinical image may show retina, but retinal detachment and scar tissue cannot be reliably assessed. The transcript is too fragmentary to compare."
-  },
-  "B055": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "oct",
-   "q3_crop": "good",
-   "q4_image_text": "none",
-   "q5_faithful": "full",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 4,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The image shows an OCT macular cube report, not the yellow lesions, optic-disc changes, or vascular tortuosity described; those findings are mentioned in the narration."
-  },
-  "B056": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "other",
-   "q3_crop": "good",
-   "q4_image_text": "full",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 3,
-    "q3_crop": 5,
-    "q4_image_text": 3,
-    "q5_faithful": 3,
-    "q6_clinical": 3,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "MRI/MRA panels support multiple ICA aneurysms, but the narration discusses nystagmus separately; associating nystagmus with the aneurysm case is unsupported and clinically misleading."
-  },
-  "B057": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "other",
-   "q3_crop": "partial",
-   "q4_image_text": "none",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "yes",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
     "q3_crop": 2,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 2,
+    "q7_pii": 2
    },
-   "no_majority": [
-    "q3_crop"
-   ],
-   "note": "A partially visible eye-region photo is patient-identifying; black overlays obscure much of the image. “PLEASE SUBSCRIBE” and “SUBSCRIBE” graphics are also visible."
+   "no_majority": [],
+   "note": "The widefield fundus is visible, but the peripheral breaks and fluid component are not clearly discernible. A presenter inset is present; no patient-identifying information is visible."
   },
-  "B058": {
+  "T331": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "cfp",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "Two color fundus photographs show a large subretinal lesion and optic disc edema; no patient-identifying information is apparent."
+  },
+  "T076": {
    "q1_ophthalmic": "yes",
    "q2_modality": "uwf",
    "q3_crop": "good",
-   "q4_image_text": "none",
-   "q5_faithful": "unsupported",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 2,
+    "q3_crop": 2,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The widefield fundus image shows peripheral hemorrhagic and ischemic-appearing changes. A small inset contains a person with the face obscured; it is not patient-identifying."
+  },
+  "T408": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "angio",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
    "q6_clinical": "major",
    "q7_pii": "no",
    "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The OCTA-like vascular panels fit the narration, but the device’s exact placement is not clearly discernible; “in the choroid” is imprecise for suprachoroidal placement."
+  },
+  "T289": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 2
+   },
+   "no_majority": [],
+   "note": "The OCT shows subretinal fluid with outer retinal/ellipsoid zone disruption and irregular RPE elevations; only orientation labels and a scan number are visible."
+  },
+  "T206": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "multi",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "Widefield color fundus imaging contains a central angiographic overlay; neovascularization is plausible, but the claimed retinal non-perfusion is not clearly delineated in this still. A small device/logo watermark is visible."
+  },
+  "T188": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "other",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The paired intraoperative retinal views show before-and-after macular hole closure. A surgeon’s name and Retina Rounds watermark are visible; neither identifies the patient."
+  },
+  "T498": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The large macular hole is visible, but the pigment epithelial detachments are not clear in this crop. The visible speaker name is presenter-identifying, not patient-identifying."
+  },
+  "T382": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "multi",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 2
+   },
+   "no_majority": [],
+   "note": "The slide pairs color fundus photographs with autofluorescence images showing enlarging atrophic areas. An ophthalmology department logo is visible; it is not patient-identifying."
+  },
+  "T092": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "other",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The image shows ultrasound scans of choroidal detachment; the narration mentions clot lysis and hemorrhagic detachment."
+  },
+  "T248": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The OCT shows tractional distortion, cystoid spaces, and hyperreflective signals; no patient-identifying information is visible."
+  },
+  "T479": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "other",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "This is an intraoperative retinal view; the image is blurry and does not clearly show multiple peripheral tears, though the narration describes them."
+  },
+  "T163": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "multi",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The montage shows color fundus, FAF, and OCT panels at 30, 60, and 90 days; the 90-day OCT is consistent with a small non-central residual fluid collection."
+  },
+  "T128": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "cfp",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The fundus photograph shows macular atrophic change; a clinic logo is visible at the lower right and is not patient-identifying."
+  },
+  "T120": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "other",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 2,
+    "q5_faithful": 2,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The histology shows detached retinal tissue and a tumor with rosette-like structures; the numbered labels are not patient-identifying."
+  },
+  "T001": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "multi",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 2,
+    "q5_faithful": 2,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The fundus image and OCT panels show retinal detachment; inferior traction is less clearly established visually. No patient-identifying information is visible."
+  },
+  "T297": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The OCT shows vitreous hyperreflective opacities and hyperreflective material anterior to the retina; a blue outline marks part of the scan."
+  },
+  "T016": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "cfp",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "Two color fundus photographs show bilateral disc swelling and peripapillary retinal findings; no patient-identifying information is visible."
+  },
+  "T102": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "cfp",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The fundus photo shows numerous pale ovoid dots, and the visible caption identifies recurrence of lymphoma with sub-RPE lesions."
+  },
+  "T311": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "other",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The macular hole is visible, but retinal pigment epithelium atrophy and retinal displacement are not clearly discernible in this view."
+  },
+  "T280": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "Anterior-segment OCT shows angle narrowing/closure, but epithelial edema is not clearly assessable in this image. APGS logo is visible; it is not patient-identifying."
+  },
+  "T091": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "multi",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 2
+   },
+   "no_majority": [],
+   "note": "The image shows fluorescein angiograms alongside a color fundus image; a presenter inset and institution logo are visible, neither patient-identifying."
+  },
+  "T371": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The structural OCT panels show annotated DME, including intraretinal fluid and exudates; no patient-identifying information is visible."
+  },
+  "T409": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "multi",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 2,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The image shows en-face OCT angiography and structural OCT scans with retinal surface wrinkling and preserved outer retinal layers; no patient-identifying information is visible."
+  },
+  "T478": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "other",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
     "q4_image_text": 3,
     "q5_faithful": 2,
-    "q6_clinical": 4,
-    "q7_pii": 5
-   },
-   "no_majority": [
-    "q5_faithful"
-   ],
-   "note": "The crop shows a single UWF retinal image, not the claimed multi-panel bilateral views; the narration also describes the retinal break and scleral fistula as separate examples."
-  },
-  "B059": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "cfp",
-   "q3_crop": "partial",
-   "q4_image_text": "none",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 3,
-    "q3_crop": 4,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The fundus photos show hemorrhages in the diseased panel, but no visible macular edema or retinal thickening; the lower image edges are cropped."
-  },
-  "B060": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "other",
-   "q3_crop": "good",
-   "q4_image_text": "none",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "yes",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 4,
-    "q3_crop": 4,
-    "q4_image_text": 3,
-    "q5_faithful": 4,
-    "q6_clinical": 4,
+    "q6_clinical": 2,
     "q7_pii": 3
    },
    "no_majority": [],
-   "note": "The image is an anterior/surgical eye view, not retina; narration discusses fibrosis/phimosis and CTR, not retinal thickening. Patient eye-region tissue is visible in the image."
+   "note": "This is an intraoperative retinal view. The narration supports green ILM staining and nonstaining ERM, but these specific features are not clearly distinguishable in the low-quality yellow-green frame."
   },
-  "B061": {
-   "q1_ophthalmic": "no",
-   "q2_modality": "na",
-   "q3_crop": "na",
-   "q4_image_text": "na",
-   "q5_faithful": "na",
-   "q6_clinical": "na",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The image shows logos/icons rather than a clinical eye image; no patient-identifying information is apparent."
-  },
-  "B062": {
+  "T212": {
    "q1_ophthalmic": "yes",
    "q2_modality": "multi",
-   "q3_crop": "partial",
-   "q4_image_text": "partial",
-   "q5_faithful": "partial",
-   "q6_clinical": "minor",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 4,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "Multicolor, NIR, FAF, and OCT panels are visible, but this frame does not demonstrate serial stability; “minimal atrophy” is also weakly supported. A presenter, Apple logo, and small watermark/logo are visible but are not patient-identifying."
-  },
-  "B063": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "oct",
-   "q3_crop": "good",
-   "q4_image_text": "partial",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 4,
-    "q4_image_text": 5,
-    "q5_faithful": 3,
-    "q6_clinical": 4,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The OCT is visible, but choroidal neovascularization is not apparent in the scan; the narration describes it as a possible late-stage complication, not a confirmed finding here."
-  },
-  "B064": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "other",
-   "q3_crop": "good",
-   "q4_image_text": "none",
-   "q5_faithful": "full",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 3,
-    "q5_faithful": 4,
-    "q6_clinical": 4,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The image shows histology panels labeled Normal and Early AMD, not a visible PED with atrophy or migrating RPE cells. The ages shown are not patient-identifying."
-  },
-  "B065": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "other",
-   "q3_crop": "partial",
-   "q4_image_text": "none",
-   "q5_faithful": "full",
-   "q6_clinical": "major",
-   "q7_pii": "yes",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 4,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The slide contains an eye-region photo on the right, which is patient-identifying. The slide also shows age/sex and conference logos/date; these are not patient-identifying."
-  },
-  "B066": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "cfp",
-   "q3_crop": "partial",
-   "q4_image_text": "none",
-   "q5_faithful": "full",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 4,
-    "q4_image_text": 5,
-    "q5_faithful": 4,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The slide shows two fundus photographs labeled “Involuted ROP”; no horseshoe tear or scleral localization marks are visible, although those details are supported by the narration."
-  },
-  "B067": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "other",
-   "q3_crop": "good",
-   "q4_image_text": "full",
-   "q5_faithful": "full",
-   "q6_clinical": "correct",
-   "q7_pii": "yes",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The image is a close-up eye-region photograph, which counts as patient-identifying."
-  },
-  "B068": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "other",
-   "q3_crop": "partial",
-   "q4_image_text": "none",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "yes",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 4,
-    "q3_crop": 4,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "Anterior-eye images are shown; the lower panel is an identifiable eye-region photo. The description claims retinal findings not depicted in these images."
-  },
-  "B069": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "multi",
-   "q3_crop": "good",
-   "q4_image_text": "partial",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 4,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The OCTA and B-scan panels show vessel-density information and drusen, but the narration says GCC is not flagged, contradicting the description’s claim of reduced GCC."
-  },
-  "B070": {
-   "q1_ophthalmic": "unsure",
-   "q2_modality": "unsure",
-   "q3_crop": "bad",
-   "q4_image_text": "none",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 4,
-    "q2_modality": 4,
-    "q3_crop": 4,
-    "q4_image_text": 4,
-    "q5_faithful": 3,
-    "q6_clinical": 3,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The tiny, severely cropped frame is uninterpretable and mostly shows the word “the”; congenital abnormality is unsupported by the image or narration."
-  },
-  "B071": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "multi",
-   "q3_crop": "good",
-   "q4_image_text": "partial",
-   "q5_faithful": "full",
-   "q6_clinical": "correct",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 4,
-    "q6_clinical": 2,
-    "q7_pii": 5
-   },
-   "no_majority": [
-    "q6_clinical"
-   ],
-   "note": "OCT and color fundus panels are shown; the described autofluorescence findings are not visible in this crop, though they are supported by the narration."
-  },
-  "B072": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "cfp",
-   "q3_crop": "good",
-   "q4_image_text": "partial",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The macular lesion is visible, but edema and a definite neovascular membrane are not established; the narration describes the membrane as something that may appear."
-  },
-  "B073": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "cfp",
    "q3_crop": "good",
    "q4_image_text": "full",
    "q5_faithful": "full",
    "q6_clinical": "correct",
    "q7_pii": "no",
    "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 4,
-    "q3_crop": 5,
-    "q4_image_text": 3,
-    "q5_faithful": 5,
-    "q6_clinical": 4,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The fundus view is consistent with vitreous disease; the narrated treatment context supports the injection and cryotherapy reference. No patient identifiers are visible."
-  },
-  "B074": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "other",
-   "q3_crop": "partial",
-   "q4_image_text": "partial",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "minor",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 4,
-    "q5_faithful": 4,
-    "q6_clinical": 3,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "Pentacam corneal maps are partly obscured by a black overlay. The narration describes this as a disputed keratoconus diagnosis, so the description's definite diagnosis is unsupported."
-  },
-  "B075": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "other",
-   "q3_crop": "partial",
-   "q4_image_text": "partial",
-   "q5_faithful": "full",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 4,
-    "q4_image_text": 5,
-    "q5_faithful": 3,
-    "q6_clinical": 3,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The visible MultiColor/SLO fundus image supports suspected RAM and exudation, but not the claimed multiple images, subretinal fluid, or intraretinal hyperreflective material; slide text and a small room inset add clutter."
-  },
-  "B076": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "multi",
-   "q3_crop": "good",
-   "q4_image_text": "none",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The image shows labeled fundus and OCT anatomy, without a retinal detachment or foveal disruption."
-  },
-  "B077": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "other",
-   "q3_crop": "good",
-   "q4_image_text": "partial",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "minor",
-   "q7_pii": "yes",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 1,
-    "q6_clinical": 4,
-    "q7_pii": 4
-   },
-   "no_majority": [
-    "q5_faithful"
-   ],
-   "note": "This is a single external eye image, not multiple images; marked redness is visible. A Zoom watermark appears in the lower-right corner."
-  },
-  "B078": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "other",
-   "q3_crop": "good",
-   "q4_image_text": "partial",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 2,
-    "q4_image_text": 4,
-    "q5_faithful": 5,
-    "q6_clinical": 4,
-    "q7_pii": 5
-   },
-   "no_majority": [
-    "q3_crop"
-   ],
-   "note": "This appears to be an intraoperative retinal view; the transcript supports laser photocoagulation in a diabetic patient, but the image does not establish a macular hole or retinal detachment."
-  },
-  "B079": {
-   "q1_ophthalmic": "no",
-   "q2_modality": "na",
-   "q3_crop": "na",
-   "q4_image_text": "na",
-   "q5_faithful": "na",
-   "q6_clinical": "na",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The image shows a simulated control room, not an ophthalmic clinical image; no patient-identifying information is visible."
-  },
-  "B080": {
-   "q1_ophthalmic": "no",
-   "q2_modality": "na",
-   "q3_crop": "na",
-   "q4_image_text": "na",
-   "q5_faithful": "na",
-   "q6_clinical": "na",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "This is a schematic eye diagram labeled with posterior capsular opacity, laser beam, and intraocular lens; no patient-identifying information is visible."
-  },
-  "B081": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "other",
-   "q3_crop": "partial",
-   "q4_image_text": "partial",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "yes",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 4,
-    "q6_clinical": 3,
-    "q7_pii": 4
-   },
-   "no_majority": [],
-   "note": "The surgical eye is visible, but thick iris and viscoelastic-assisted irrigation/aspiration are not shown; the narration refers to floppy iris and thick epicortex. The patient’s eye-region is visible."
-  },
-  "B082": {
-   "q1_ophthalmic": "no",
-   "q2_modality": "na",
-   "q3_crop": "na",
-   "q4_image_text": "na",
-   "q5_faithful": "na",
-   "q6_clinical": "na",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 4,
-    "q2_modality": 4,
-    "q3_crop": 4,
-    "q4_image_text": 4,
-    "q5_faithful": 4,
-    "q6_clinical": 4,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The image shows a software segmentation display, not an ophthalmic clinical image; no patient-identifying information is visible."
-  },
-  "B083": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "other",
-   "q3_crop": "bad",
-   "q4_image_text": "none",
-   "q5_faithful": "full",
-   "q6_clinical": "correct",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
     "q3_crop": 3,
     "q4_image_text": 3,
-    "q5_faithful": 5,
-    "q6_clinical": 2,
-    "q7_pii": 5
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
    },
-   "no_majority": [
-    "q6_clinical"
-   ],
-   "note": "This histology crop shows retinal tumor tissue/rosettes rather than the anterior segment, lens, or angle described; those details are nevertheless explicitly supported by the narration."
+   "no_majority": [],
+   "note": "OCT and BAF panels show central retinal abnormalities and a vitelliform-appearing lesion; age and sex are visible but are not patient-identifying."
   },
-  "B084": {
+  "T263": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "cfp",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "Bilateral fundus photographs show marked disc/peripapillary edema and hemorrhage; the intraocular mass is not definitively established from these photos alone but is supported by narration. Institution logo and small video overlay are visible."
+  },
+  "T147": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "multi",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The image shows fundus photography and angiography, but no OCT, so the ILM hyperreflectivity claim is not visible here. A logo is present at upper right; it is not patient-identifying."
+  },
+  "T357": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "other",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The grayscale en-face image shows an atrophic region beside preserved RPE; progression is described in the narration but is not demonstrated over time in this frame."
+  },
+  "T323": {
    "q1_ophthalmic": "yes",
    "q2_modality": "angio",
-   "q3_crop": "partial",
-   "q4_image_text": "none",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
    "q7_pii": "no",
    "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 4,
-    "q4_image_text": 4,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The fluorescein angiogram is visible but cluttered by slide margins and a Zoom overlay; it does not show the claimed subretinal leakage, extraretinal accumulation, or retinal detachment. Zoom and institution logos are non-identifying."
-  },
-  "B085": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "other",
-   "q3_crop": "bad",
-   "q4_image_text": "none",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
-   "q7_pii": "yes",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 4,
-    "q3_crop": 4,
-    "q4_image_text": 4,
-    "q5_faithful": 5,
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
     "q6_clinical": 3,
-    "q7_pii": 4
+    "q7_pii": 3
    },
    "no_majority": [],
-   "note": "The image is a severely blurred external eye-region photograph, not a retinal image; retinal detachment or fibrous proliferation cannot be seen. The visible eye region counts as patient-identifying."
+   "note": "OCTA en-face image shows cystoid nonflow spaces with highlighted focal hyperintense clumps and corresponding magnified insets; no patient identifiers are visible."
   },
-  "B086": {
+  "T384": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The OCT shows macular edema and hyperreflective foci, but microaneurysms are not directly visible in this cross-section; narration mentions both microaneurysms and hard exudates."
+  },
+  "T381": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "cfp",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The close color fundus view shows the optic disc and surrounding peripapillary pigmentary changes."
+  },
+  "T448": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "angio",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 2
+   },
+   "no_majority": [],
+   "note": "Angiography shows severe peripheral nonperfusion with prominent disc leakage/neovascularization and additional peripheral neovascular leakage. A small presenter video inset is visible but is not patient-identifying."
+  },
+  "T027": {
    "q1_ophthalmic": "yes",
    "q2_modality": "cfp",
    "q3_crop": "good",
    "q4_image_text": "partial",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "minor",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
    "q7_pii": "no",
    "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
     "q3_crop": 3,
-    "q4_image_text": 4,
-    "q5_faithful": 4,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
     "q6_clinical": 3,
-    "q7_pii": 5
+    "q7_pii": 2
    },
    "no_majority": [],
-   "note": "The fundus photographs show abnormalities near the disc, but microaneurysms are not clearly discernible; the narration does not identify specific findings."
+   "note": "Hemorrhages and disc-margin blurring are visible, but the tractional detachment is not clear in these fundus photos; narration attributes it to OCT. Moran Eye Center and University of Utah Health logos and a small video inset are present."
   },
-  "B087": {
-   "q1_ophthalmic": "no",
-   "q2_modality": "na",
-   "q3_crop": "na",
-   "q4_image_text": "na",
-   "q5_faithful": "na",
-   "q6_clinical": "na",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "This is a thoracic CT image, not an ophthalmic clinical image."
-  },
-  "B088": {
+  "T181": {
    "q1_ophthalmic": "yes",
    "q2_modality": "multi",
    "q3_crop": "good",
@@ -1781,138 +775,118 @@ window.AUDIT_AI = {
    "q6_clinical": "correct",
    "q7_pii": "no",
    "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 4,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
    },
    "no_majority": [],
-   "note": "The OCT and fundus/autofluorescence panels show the described photoreceptor changes and laser-treated regions; no patient-identifying information is visible."
+   "note": "The composite shows fundus images and OCT scans, including the labeled preoperative traction and postoperative relief; no patient-identifying information is visible."
   },
-  "B089": {
+  "T210": {
    "q1_ophthalmic": "yes",
    "q2_modality": "other",
    "q3_crop": "good",
-   "q4_image_text": "none",
+   "q4_image_text": "full",
    "q5_faithful": "full",
-   "q6_clinical": "major",
+   "q6_clinical": "correct",
    "q7_pii": "no",
    "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 4,
-    "q6_clinical": 4,
-    "q7_pii": 5
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
    },
    "no_majority": [],
-   "note": "The image shows labeled RPE, outer segments, and Bruch’s membrane, not ciliary body epithelium; the description’s claim is supported by the narration but mismatches the image."
+   "note": "The subgross eye specimen is fully visible; the on-screen controls and Windows taskbar do not show patient-identifying information."
   },
-  "B090": {
+  "T060": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "multi",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "Color fundus and fluorescein angiography panels show extensive neovascularization, nonperfusion/ischemia, and irregular beaded veins. An institution logo is visible at upper right but is not patient-identifying."
+  },
+  "T038": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "angio",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 2,
+    "q5_faithful": 2,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The angiogram shows disc leakage and areas of blocked fluorescence, but macular neovascularization and the extent of preretinal hemorrhage are not clearly assessable in this image."
+  },
+  "T379": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "other",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "Histology shows liquefied lens material and detached, markedly atrophic retinal tissue. A computer taskbar with a date/time is visible; it is not patient-identifying."
+  },
+  "T118": {
    "q1_ophthalmic": "yes",
    "q2_modality": "other",
    "q3_crop": "good",
    "q4_image_text": "partial",
    "q5_faithful": "full",
-   "q6_clinical": "minor",
-   "q7_pii": "yes",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
    "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 4,
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
     "q6_clinical": 3,
-    "q7_pii": 5
+    "q7_pii": 3
    },
    "no_majority": [],
-   "note": "Only one fluorescein contact-lens fitting image is visible, not multiple comparison images; the eye-region photograph is patient-identifying and occupies the center."
+   "note": "The retinal tissue is visible, but optic nerve atrophy is not shown in this crop; it is supported by the narration. Video-call participant labels are visible, not patient identifiers."
   },
-  "B091": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "cfp",
-   "q3_crop": "partial",
-   "q4_image_text": "full",
-   "q5_faithful": "full",
-   "q6_clinical": "correct",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 3,
-    "q4_image_text": 4,
-    "q5_faithful": 4,
-    "q6_clinical": 4,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The four fundus panels show vitreous opacity examples; the “Underreported” title obscures part of one panel. Presenter name/logo and YouTube watermark are visible, but are not patient-identifying."
-  },
-  "B092": {
-   "q1_ophthalmic": "no",
-   "q2_modality": "na",
-   "q3_crop": "na",
-   "q4_image_text": "na",
-   "q5_faithful": "na",
-   "q6_clinical": "na",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 4,
-    "q2_modality": 4,
-    "q3_crop": 4,
-    "q4_image_text": 4,
-    "q5_faithful": 4,
-    "q6_clinical": 4,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The narrow, blurry image does not show a recognizable ophthalmic clinical image or patient-identifying information."
-  },
-  "B093": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "other",
-   "q3_crop": "good",
-   "q4_image_text": "full",
-   "q5_faithful": "full",
-   "q6_clinical": "correct",
-   "q7_pii": "yes",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 4,
-    "q5_faithful": 5,
-    "q6_clinical": 4,
-    "q7_pii": 4
-   },
-   "no_majority": [],
-   "note": "Surgical anterior-segment view matches tilted vertically hanging IOL described; crop is interpretable despite top-right overlay. PII: close-up patient eye/anterior segment visible."
-  },
-  "B094": {
-   "q1_ophthalmic": "no",
-   "q2_modality": "na",
-   "q3_crop": "na",
-   "q4_image_text": "na",
-   "q5_faithful": "na",
-   "q6_clinical": "na",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 4,
-    "q2_modality": 4,
-    "q3_crop": 4,
-    "q4_image_text": 4,
-    "q5_faithful": 4,
-    "q6_clinical": 4,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "The image is a stylized schematic illustration, not a clinical eye image; no patient-identifying information is visible."
-  },
-  "B095": {
+  "T126": {
    "q1_ophthalmic": "yes",
    "q2_modality": "oct",
    "q3_crop": "good",
@@ -1921,116 +895,1116 @@ window.AUDIT_AI = {
    "q6_clinical": "correct",
    "q7_pii": "no",
    "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 4,
-    "q5_faithful": 4,
-    "q6_clinical": 4,
-    "q7_pii": 5
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
    },
    "no_majority": [],
-   "note": "OCT labels indicate intraretinal cysts, subretinal fluid, and generalized retinal thickening; no patient-identifying information is visible."
+   "note": "The OCT shows a central scar-like subretinal abnormality with irregular deposits and a largely preserved foveal contour. A Zoom logo is visible; it is not patient-identifying."
   },
-  "B096": {
+  "T088": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The OCT shows a dome-shaped RPE elevation with sub-RPE fluid. A Zoom watermark and small presenter inset are visible; no patient-identifying information is apparent."
+  },
+  "T039": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "uwf",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 2,
+    "q3_crop": 3,
+    "q4_image_text": 2,
+    "q5_faithful": 2,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "Widefield fundus image shows a nasal peripapillary elevated tumor with adjacent retinal fluid/edematous appearance. Presenter name/logo and Zoom watermark are visible but are not patient-identifying."
+  },
+  "T162": {
    "q1_ophthalmic": "yes",
    "q2_modality": "other",
    "q3_crop": "good",
    "q4_image_text": "partial",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "minor",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
    "q7_pii": "no",
    "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 3,
     "q5_faithful": 3,
-    "q6_clinical": 4,
-    "q7_pii": 5
+    "q6_clinical": 3,
+    "q7_pii": 3
    },
    "no_majority": [],
-   "note": "This is an intraocular surgical view, but the image does not establish that both vitrectomy and scleral buckling were performed."
+   "note": "This is a surgical view, but the low-resolution image does not clearly confirm the described scar tissue and retinal folds."
   },
-  "B097": {
-   "q1_ophthalmic": "no",
-   "q2_modality": "na",
-   "q3_crop": "na",
-   "q4_image_text": "na",
-   "q5_faithful": "na",
-   "q6_clinical": "na",
-   "q7_pii": "yes",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 4
-   },
-   "no_majority": [],
-   "note": "A patient's face/forehead is visible in the lower-center panel."
-  },
-  "B098": {
+  "T084": {
    "q1_ophthalmic": "yes",
    "q2_modality": "multi",
    "q3_crop": "good",
    "q4_image_text": "partial",
-   "q5_faithful": "unsupported",
-   "q6_clinical": "major",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
    "q7_pii": "no",
    "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 5,
-    "q6_clinical": 5,
-    "q7_pii": 5
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
    },
    "no_majority": [],
-   "note": "OCTA and structural OCT are shown; GA and ellipsoid-zone disruption are supported, but pathologic choroidal neovascularization is not evident or stated in the transcript."
+   "note": "The color fundus and angiographic panels are visible, but a large hemorrhage and polyps are not clearly discernible in this frame."
   },
-  "B099": {
+  "T145": {
    "q1_ophthalmic": "yes",
    "q2_modality": "other",
-   "q3_crop": "partial",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "Intraoperative retinal view; the fold is visible, but subretinal membranes are difficult to distinguish in this low-resolution image."
+  },
+  "T346": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The OCT shows a full-thickness macular hole with intraretinal spaces; the transcript mentions fluid in the inner and outer nuclear layers. The age “60” and an eye icon are visible, but neither is patient-identifying."
+  },
+  "T020": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "other",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The surgical view is consistent with the described technique, but the flap and viscoelastic interface are not clearly distinguishable in this frame. The overlay names Prof. Chi-Chun Lai, not the patient."
+  },
+  "T262": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "angio",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The OCTA montage labels the vitreoretinal-interface signal as pre-retinal neovascularization; Zeiss branding is visible and is not patient-identifying."
+  },
+  "T072": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "cfp",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "Color fundus photographs show a yellow, blurred-edged retinal lesion with an adjacent scar; the second panel appears to be another view of the same modality."
+  },
+  "T349": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The OCT shows a shallow RPE elevation, a thin choroid, and broad posterior curvature consistent with the described findings; no patient-identifying information is visible."
+  },
+  "T226": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "cfp",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The fundus photograph and retinal cross-section illustration show drusen in a slide about mild dry AMD; an institution logo is visible."
+  },
+  "T042": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The OCT shows an irregular, serrated RPE elevation with subretinal fluid; the narration also describes a neovascular membrane beneath the epithelium. No patient-identifying information is visible."
+  },
+  "T249": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 2,
+    "q3_crop": 2,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The OCT shows a large intraretinal cyst with hyperreflective signals in the magnified view; the visible article citation is not patient-identifying."
+  },
+  "T186": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 2,
+    "q3_crop": 3,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "Multiple OCT panels visibly demonstrate vitreous hyperreflective foci, an epimacular membrane, and premacular/prepapillary neovascularization. A presenter name, email, and institutional logo are visible but are not patient-identifying."
+  },
+  "T308": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "multi",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 2,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The OCTA report includes superficial plexus maps and a structural OCT B-scan; central low-density areas and the density table support the description."
+  },
+  "T315": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "cfp",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "Two color fundus panels show disc swelling, most evident in panel A; retinal layer thickening is inferred clinically rather than directly demonstrable on a fundus photograph."
+  },
+  "T304": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The two OCT scans show elevated optic nerve heads and peripapillary corrugations, consistent with the narration's papilledema case."
+  },
+  "T313": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The three OCT examples show diffuse thickening, cystoid spaces, and subretinal fluid. A university logo is visible at the upper right; it is not patient-identifying."
+  },
+  "T217": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "multi",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The composite shows widefield color and autofluorescence retinal images; the visible call-tile label appears to identify a presenter, not the patient."
+  },
+  "T488": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "multi",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The montage shows fundus images, an OCT map, and OCT B-scans; the labels appear to indicate visual acuity and time after injection, not patient-identifying dates."
+  },
+  "T338": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "multi",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The image shows a color fundus photo and grayscale autofluorescence; hyperautofluorescence is described in the narration, but the RPE defect and subretinal fluid are not directly visible in these panels."
+  },
+  "T225": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "multi",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The paired color fundus and red-free images support the description; a Narayana institution logo is visible."
+  },
+  "T265": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The OCT shows subretinal fluid and prominent subretinal hyperreflective material; hemorrhage cannot be definitively distinguished from scar tissue on this single B-scan."
+  },
+  "T231": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "multi",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The fundus image and OCT show vitelliform-type material with outer retinal disruption/atrophy; no patient-identifying information is visible."
+  },
+  "T141": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "other",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "Intraoperative vitreoretinal view shows a pale subretinal clot with retinal flap/instrument manipulation. Presenter name watermark and channel logo are visible but are not patient-identifying."
+  },
+  "T402": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "cfp",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "Two fundus photographs are shown; the peripheral loops and nasal tractional detachment are not clearly discernible. OD labels are visible but are not patient-identifying."
+  },
+  "T434": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "Structural OCT panels show peripapillary atrophy, mild thinning, and nasal segmentation difficulty, as described."
+  },
+  "T101": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "cfp",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 2,
+    "q3_crop": 2,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The fundus view is consistent with a flat postoperative retina and visible optic disc region. A Zoom logo is visible; it is not patient-identifying."
+  },
+  "T143": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "other",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "This is a B-scan ultrasound with vitreous opacity; the foreign body is not very conspicuous in this cropped still, although the described posterior-wall echogenic foreign body is supported by narration."
+  },
+  "T305": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "multi",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The image pairs an optic nerve view with an OCT cross-section showing drusen and peripapillary hyperreflective ovoid structures."
+  },
+  "T250": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "other",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The grayscale retinal image shows geographic atrophy and pale spots, but evolution and progressive margin changes cannot be verified from this single frame."
+  },
+  "T354": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "angio",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The OCTA-like en-face image shows capillary nonperfusion and an abnormal vascular network, but the vitreoretinal-interface location is not directly shown in this view."
+  },
+  "T159": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "cfp",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The bilateral fundus photographs are visible, but their limited field does not allow the absence of peripheral lesions to be verified."
+  },
+  "T046": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "multi",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The slide combines bilateral red-free fundus photographs with visual-field plots; temporal pallor/excavation is visible and supported by narration. Institution logos are visible but are not patient-identifying."
+  },
+  "T182": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "cfp",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The image shows a fundus with features consistent with severe hypertensive retinopathy and yellowish macular changes; the narration also mentions grade 4 hypertensive retinopathy and yellow coloration."
+  },
+  "T207": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "other",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The three panels show infrared reflectance images with macular atrophy; no patient-identifying information is visible."
+  },
+  "T366": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The OCT panels show the described deposits, intraretinal fluid, and pigment epithelial elevation; no patient-identifying information is visible."
+  },
+  "T048": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "uwf",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 2,
+    "q3_crop": 3,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The lesion is visible, but serous retinal detachment is not clearly discernible in this fundus image. The footer shows the presenter’s name and institution logo; neither identifies the patient."
+  },
+  "T356": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "other",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "Ultrasound A/B-scan comparison is preserved; the left panel is labeled choroidal melanoma and supports excavation with associated retinal detachment. No patient identifiers are visible."
+  },
+  "T173": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "cfp",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "Paired fundus photographs show enlarged cupping and a disc-margin hemorrhage with nerve fiber layer loss; no patient-identifying information is visible."
+  },
+  "T164": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "other",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The ultrasound shows choroidal effusion, but macular folds and optic nerve edema are not visible in this frame. The heading is non-identifying."
+  },
+  "T115": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "cfp",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 2,
+    "q3_crop": 2,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "Sequential color fundus photographs show a treated white retinal lesion/scar with a small red scar-edge relapse and subsequent treatment-related regression."
+  },
+  "T353": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "multi",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 2,
+    "q3_crop": 2,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "OCT panels show subretinal fluid and heterogeneous subretinal hyperreflective material; the narration explicitly expresses uncertainty about neovascularization. No patient identifiers are visible."
+  },
+  "T209": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "cfp",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The main color fundus photograph shows yellow hard exudates; the adjacent fundus panel is partly cropped, but the described finding is visible in the main image."
+  },
+  "T419": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "cfp",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The peripheral fundus photograph shows an annotated retinal tear and detachment; chronic folded flap and atrophic detached retina are supported by narration. A small source watermark is visible, but no patient identifiers."
+  },
+  "T437": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "multi",
+   "q3_crop": "good",
+   "q4_image_text": "partial",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 2,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "Color and monochromatic fundus images plus an OCT thickness map are visible. Central thickness of 308 µm supports thickening, but the abnormal foveolar contour and ERM are not clearly demonstrated in this low-resolution frame."
+  },
+  "T117": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "cfp",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The slide shows color fundus photographs illustrating the described hypertensive retinopathy findings; no patient-identifying information is visible."
+  },
+  "T364": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "other",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The grayscale autofluorescence image shows the bright curved band near the disc described as the RPE rip; no patient-identifying information is visible."
+  },
+  "T243": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "multi",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "Infrared fundus imaging and an OCT B-scan show central LHEP/lamellar-hole configuration with outer retinal disruption; the narration supports continuous ELM, granular subfoveal RPE, and photoreceptor loss. Device software interface is visible."
+  },
+  "T194": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 2,
+    "q5_faithful": 3,
+    "q6_clinical": 2,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The OCT shows focal outer retinal/RPE atrophy with a hyperreflective wedge and inner retinal subsidence; no patient-identifying information is visible."
+  },
+  "T372": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "Four OCT B-scans show vitreous remnants and macular surface changes; no patient-identifying information is visible."
+  },
+  "T010": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "other",
+   "q3_crop": "good",
    "q4_image_text": "partial",
    "q5_faithful": "full",
    "q6_clinical": "major",
    "q7_pii": "no",
    "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 4,
-    "q4_image_text": 5,
-    "q5_faithful": 4,
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
     "q6_clinical": 3,
-    "q7_pii": 5
-   },
-   "no_majority": [],
-   "note": "Only one gonioscopic view is visible, so three distinct findings cannot all be verified; the description appears to combine narrated examples. Presenter name and conference logo are visible but are not patient-identifying."
-  },
-  "B100": {
-   "q1_ophthalmic": "yes",
-   "q2_modality": "cfp",
-   "q3_crop": "partial",
-   "q4_image_text": "none",
-   "q5_faithful": "full",
-   "q6_clinical": "major",
-   "q7_pii": "no",
-   "agree": {
-    "q1_ophthalmic": 5,
-    "q2_modality": 5,
-    "q3_crop": 5,
-    "q4_image_text": 5,
-    "q5_faithful": 4,
-    "q6_clinical": 5,
     "q7_pii": 3
    },
    "no_majority": [],
-   "note": "The slide shows two color fundus photographs, not OCT views of retinal layers or macular edema. A Zoom interface and a participant name are visible; neither appears to identify the patient."
+   "note": "This is an infrared reflectance fundus image; edema and epiretinal membrane are not clearly distinguishable, and chronic ischemia is not directly assessed by this modality. The case-title overlay is not patient-identifying."
+  },
+  "T050": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "oct",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "Four EDI-OCT scans show thicker choroids in CSC cases than in the healthy control. The caption includes ages and sex, and a USF Health logo; these are not patient-identifying."
+  },
+  "T270": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "multi",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 2,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The slide shows paired fundus photographs and OCT scans; no patient-identifying information is visible."
+  },
+  "T075": {
+   "q1_ophthalmic": "yes",
+   "q2_modality": "multi",
+   "q3_crop": "good",
+   "q4_image_text": "full",
+   "q5_faithful": "full",
+   "q6_clinical": "correct",
+   "q7_pii": "no",
+   "agree": {
+    "q1_ophthalmic": 3,
+    "q2_modality": 3,
+    "q3_crop": 3,
+    "q4_image_text": 3,
+    "q5_faithful": 3,
+    "q6_clinical": 3,
+    "q7_pii": 3
+   },
+   "no_majority": [],
+   "note": "The fundus image and OCT show the described hemorrhage and tractional changes; no patient-identifying information is visible."
   }
  }
 };

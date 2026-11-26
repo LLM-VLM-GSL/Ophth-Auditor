@@ -51,7 +51,7 @@ window.AUDIT_AI = {
    "q2_modality": "angio",
    "q3_crop": "good",
    "q4_image_text": "full",
-   "q5_faithful": "cant_judge",
+   "q5_faithful": "unsupported",
    "q6_clinical": "correct",
    "q7_pii": "no",
    "agree": {
@@ -73,8 +73,8 @@ window.AUDIT_AI = {
    "q2_modality": "uwf",
    "q3_crop": "partial",
    "q4_image_text": "partial",
-   "q5_faithful": "cant_judge",
-   "q6_clinical": "minor",
+   "q5_faithful": "unsupported",
+   "q6_clinical": "major",
    "q7_pii": "no",
    "agree": {
     "q1_ophthalmic": 3,
@@ -114,7 +114,7 @@ window.AUDIT_AI = {
    "q3_crop": "good",
    "q4_image_text": "partial",
    "q5_faithful": "full",
-   "q6_clinical": "minor",
+   "q6_clinical": "major",
    "q7_pii": "no",
    "agree": {
     "q1_ophthalmic": 3,

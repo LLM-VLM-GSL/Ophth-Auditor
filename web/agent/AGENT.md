@@ -2,8 +2,8 @@
 
 You are one automated rater in an audit of 100 ophthalmic image-description pairs. Use your own model to judge
 every case, then write one JSON file and give it to the person who asked you. A panel of several models does the
-same task independently; clinicians only review the panel's result at the end. Rubric `rubric-v1`, case list
-`train-v1-2026-11-18`.
+same task independently; clinicians only review the panel's result at the end. Rubric `rubric-v1-table`, case list
+`test100-hq-2026-11-26`.
 
 Everything is public and needs no account. Base URL: https://llm-vlm-gsl.github.io/Ophth-Auditor/agent/ (the files below; paths are relative to it).
 
@@ -41,8 +41,8 @@ and the narration against each other, and against your clinical knowledge.
 5. **Write the file** `ophth_audit_<rater-slug>_<YYYYMMDD-HHMM>.json`, exactly as `index.json` → `export` and the root
    of `output_schema.json` describe:
    - top-level keys in this order: `tool`, `tool_version`, `rubric_version`, `manifest_version`, `exported_at`, `rater`, `annotations`, then `run`;
-   - `tool` = `ophth-audit`, `tool_version` = `1.0`, `rubric_version` = `rubric-v1`,
-     `manifest_version` = `train-v1-2026-11-18`, `exported_at` = now (ISO-8601 with UTC offset);
+   - `tool` = `ophth-audit`, `tool_version` = `1.0`, `rubric_version` = `rubric-v1-table`,
+     `manifest_version` = `test100-hq-2026-11-26`, `exported_at` = now (ISO-8601 with UTC offset);
    - `rater` = `{"name": "<provider>/<model>", "role": "llm", "years_experience": null}`: name the model that
      actually made the judgements, as precisely as you know it (for example `anthropic/claude-opus-5-5`,
      `openai/gpt-6-luna`, `google/gemini-3-pro`); if you are not sure of the exact version, say so in `run`;

@@ -167,7 +167,7 @@ async function typeCode(code, remember) {   // the access dialog: type a code an
 const AI_FIX = {
   T001: { q1_ophthalmic: "yes", q2_modality: "oct", q3_crop: "good", q4_image_text: "full", q5_faithful: "partial", q6_clinical: "correct", q7_pii: "no" },
   T002: { q1_ophthalmic: "no", q2_modality: "na", q3_crop: "na", q4_image_text: "na", q5_faithful: "na", q6_clinical: "na", q7_pii: "yes" },
-  T003: { q1_ophthalmic: "yes", q2_modality: "angio", q3_crop: "good", q4_image_text: "full", q5_faithful: "cant_judge", q6_clinical: "correct", q7_pii: "no" },
+  T003: { q1_ophthalmic: "yes", q2_modality: "angio", q3_crop: "good", q4_image_text: "full", q5_faithful: "unsupported", q6_clinical: "correct", q7_pii: "no" },
 };
 const pickQ = (a) => (a ? Object.fromEntries(Object.keys(AI_FIX.T001).map((q) => [q, a[q]])) : null);
 const same = (x, y) => JSON.stringify(x) === JSON.stringify(y);
@@ -250,7 +250,7 @@ async function plain() {
   check("image loaded", await until(`document.getElementById("img").naturalWidth>0`));
   check("description shown", (await js(`document.getElementById("caption").textContent`)).startsWith("Optical coherence tomography B-scan"));
   check("English transcript, no language line", (await js(`document.getElementById("langInfo").textContent`)) === "" && (await js(`document.getElementById("transcript").textContent`)).startsWith("Here you can see"));
-  check("q2 offers 7 answers incl. Multi (key 6)", (await js(`[...document.querySelectorAll('[data-q=q2_modality] .opt')].map(b=>b.querySelector("kbd").textContent+b.querySelector("span").textContent).join("|")`)) === "1OCT|2CFP|3UWF|4Angio|5Other|6Multi|7Unsure");
+  check("q2 offers 6 answers, Multi first (key 1)", (await js(`[...document.querySelectorAll('[data-q=q2_modality] .opt')].map(b=>b.querySelector("kbd").textContent+b.querySelector("span").textContent).join("|")`)) === "1Multi|2OCT|3CFP|4Angio|5Other|6UWF");
   check("plain words only on the page", !TECH.test(await shownText()), ((await shownText()).match(TECH) || [])[0]);
   check("AI pre-filled answers: the 7 AI answers are pre-selected, marked AI, and not the reviewer's yet",
     (await js(`document.querySelectorAll("#qlist .opt.ai").length===7 && document.querySelectorAll("#qlist .q.sug").length===7 && !document.querySelector("#qlist .opt.sel") && document.querySelectorAll("#qlist .opt.aimark").length===7`)) &&
@@ -265,7 +265,7 @@ async function plain() {
   await key("ArrowUp");
   check("Up goes back to q1", (await js(`AUDIT_APP.state.active`)) === 0);
   await key("ArrowDown");
-  await keys("111216");                                       // oct good full partial correct, then q7: 6 is not an answer
+  await keys("211216");                                       // oct good full partial correct, then q7: 6 is not an answer
   check("a key without an answer does nothing", (await js(`AUDIT_APP.state.id`)) === "T001" && !(await ann("T001")).q7_pii);
   await key("1");                                             // q7 no -> complete
   check("case 1 complete: auto-advance to case 2", (await js(`AUDIT_APP.state.id`)) === "T002");
@@ -300,15 +300,15 @@ async function plain() {
   const a2b = await ann("T002");
   check("q1 changed back to yes: the na values are cleared", [a2b.q2_modality, a2b.q3_crop, a2b.q4_image_text, a2b.q5_faithful, a2b.q6_clinical].every((v) => v === "") && a2b.q7_pii === "yes", answers(a2b));
   check("case 2 is now started, not complete", (await js(`AUDIT_APP.status("T002")`)) === "partial");
-  await keys("62342");                                        // multi partial none cant_judge minor -> complete
+  await keys("12332");                                        // multi partial none unsupported major -> complete
   check("case 2 complete with Multi: auto-advance to case 3", (await js(`AUDIT_APP.state.id`)) === "T003");
-  check("case 2 answers", answers(await ann("T002")) === "yes,multi,partial,none,cant_judge,minor,yes", answers(await ann("T002")));
+  check("case 2 answers", answers(await ann("T002")) === "yes,multi,partial,none,unsupported,major,yes", answers(await ann("T002")));
 
   await sleep(1200);
-  await click('[data-q=q1_ophthalmic] .opt:nth-child(3)');
-  check("mouse click answers q1 (unsure) and keeps keys working", (await ann("T003")).q1_ophthalmic === "unsure" && (await js(`document.activeElement===document.body`)));
-  await keys("731441");
-  check("case 3 answers", answers(await ann("T003")) === "unsure,unsure,bad,full,cant_judge,cant_judge,no", answers(await ann("T003")));
+  await click('[data-q=q1_ophthalmic] .opt:nth-child(1)');
+  check("mouse click answers q1 (valid) and keeps keys working", (await ann("T003")).q1_ophthalmic === "yes" && (await js(`document.activeElement===document.body`)));
+  await keys("631321");
+  check("case 3 answers", answers(await ann("T003")) === "yes,uwf,bad,full,unsupported,major,no", answers(await ann("T003")));
   check("auto-advance to case 4", (await js(`AUDIT_APP.state.id`)) === "T004");
 
   check("empty transcript: 'use the audio'", (await js(`document.getElementById("transcript").textContent`)) === "No transcript available — use the audio.");
@@ -397,7 +397,7 @@ async function plain() {
   check("…and its session is found", (await js(`document.getElementById("sRes").textContent`)).includes("3 of 6 annotated") && (await js(`document.getElementById("sGo").textContent`)) === "Continue", await js(`document.getElementById("sRes").textContent`));
   await js(`document.getElementById("sGo").click()`); await sleep(600);
   check("resumed: no welcome, 3 / 6, at the first case still to do", (await js(`document.getElementById("welcomeBox").hidden`)) && (await js(`document.getElementById("pDone").textContent`)) === "3 / 6" && (await js(`AUDIT_APP.state.id`)) === "T004");
-  check("answers and notes survived the reload", answers(await ann("T002")) === "yes,multi,partial,none,cant_judge,minor,yes" && (await ann("T002")).note === "Name 123 " && (await ann("T004")).note.startsWith("5, "));
+  check("answers and notes survived the reload", answers(await ann("T002")) === "yes,multi,partial,none,unsupported,major,yes" && (await ann("T002")).note === "Name 123 " && (await ann("T004")).note.startsWith("5, "));
 
   await key("s", { mod: 2 }); await sleep(700);                 // Ctrl+S = Export JSON
   check("Ctrl+S downloads the JSON file", (await waitDownloads(1, 5000)).some((f) => f.endsWith(".json")));
@@ -414,8 +414,8 @@ async function plain() {
   const expected = { manifest_version: "fixture-v1", rater: { name: "Dr. Jane O'Neil", role: "", years_experience: null },
     answers: {
       T001: { q1_ophthalmic: "yes", q2_modality: "oct", q3_crop: "good", q4_image_text: "full", q5_faithful: "partial", q6_clinical: "correct", q7_pii: "no", note: "" },
-      T002: { q1_ophthalmic: "yes", q2_modality: "multi", q3_crop: "partial", q4_image_text: "none", q5_faithful: "cant_judge", q6_clinical: "minor", q7_pii: "yes", note: "Name 123 " },
-      T003: { q1_ophthalmic: "unsure", q2_modality: "unsure", q3_crop: "bad", q4_image_text: "full", q5_faithful: "cant_judge", q6_clinical: "cant_judge", q7_pii: "no" },
+      T002: { q1_ophthalmic: "yes", q2_modality: "multi", q3_crop: "partial", q4_image_text: "none", q5_faithful: "unsupported", q6_clinical: "major", q7_pii: "yes", note: "Name 123 " },
+      T003: { q1_ophthalmic: "yes", q2_modality: "uwf", q3_crop: "bad", q4_image_text: "full", q5_faithful: "unsupported", q6_clinical: "major", q7_pii: "no" },
       T004: { q1_ophthalmic: "", q7_pii: "", note: '5, "quoted"\nline 2; café' },
       T005: { q1_ophthalmic: "", q2_modality: "", note: "", annotated_at: "" },
     }, timed: ["T001", "T002", "T003"], ai_model: "testlab/vision-model",
@@ -431,7 +431,7 @@ async function plain() {
   check("XLSX loaded: 4 cases taken", (await askText()).includes("4 cases taken"), await askText());
   await askClick(true); await sleep(200);
   check("after XLSX load: 3 / 6 and the answers back", (await js(`document.getElementById("pDone").textContent`)) === "3 / 6" &&
-    answers(await ann("T002")) === "yes,multi,partial,none,cant_judge,minor,yes" && (await ann("T002")).note === "Name 123 ");
+    answers(await ann("T002")) === "yes,multi,partial,none,unsupported,major,yes" && (await ann("T002")).note === "Name 123 ");
   await loadFileInput(jsonFile);
   check("JSON of the same answers: nothing taken, 4 kept", (await askText()).includes("0 cases taken") && (await askText()).includes("4 cases kept"), await askText());
   await askClick(true); await sleep(200);
@@ -508,11 +508,11 @@ async function aiFlow() {
   await key("1");
   check("AI: the reviewer changes q1 to yes: q2-q6 open, without AI answers (the AI had none)", (await js(`document.querySelectorAll("#qlist .q.skip").length`)) === 0 &&
     (await js(`document.querySelectorAll("#qlist .opt.ai").length`)) === 1 && (await js(`AUDIT_APP.state.active`)) === 1 && (await ann("T002")).q1_ophthalmic === "yes");
-  check("AI: the AI's own answer keeps its AI badge after the change", await js(`document.querySelector('[data-q=q1_ophthalmic] .opt.aimark span').textContent==="No" && document.querySelector('[data-q=q1_ophthalmic] .opt.sel span').textContent==="Yes"`));
+  check("AI: the AI's own answer keeps its AI badge after the change", await js(`document.querySelector('[data-q=q1_ophthalmic] .opt.aimark span').textContent==="Invalid" && document.querySelector('[data-q=q1_ophthalmic] .opt.sel span').textContent==="Valid"`));
   await key("Enter");
   check("AI: Confirm with a question the AI did not answer: says so, stays", (await js(`AUDIT_APP.state.id`)) === "T002" && (await js(`document.getElementById("toast").textContent`)).startsWith("Question 2 has no AI answer") &&
     (await js(`AUDIT_APP.status("T002")`)) === "partial", await js(`document.getElementById("toast").textContent`));
-  await keys("21211");                                         // cfp good partial full correct; q7 stays the AI's
+  await keys("31211");                                         // cfp good partial full correct; q7 stays the AI's
   check("AI: answered q2-q6, q7 still the AI's: not complete yet", (await js(`AUDIT_APP.state.id`)) === "T002" && (await js(`AUDIT_APP.state.active`)) === 6 && !(await ann("T002")).q7_pii);
   await key("Enter");
   check("AI: Confirm takes the AI's q7 'yes', which asks for a note", (await ann("T002")).q7_pii === "yes" && (await js(`document.activeElement.id`)) === "note");
@@ -522,7 +522,7 @@ async function aiFlow() {
   check("AI: then Enter opens the next case", (await js(`AUDIT_APP.state.id`)) === "T003" && (await js(`AUDIT_APP.status("T002")`)) === "flag");
   // T003: one answer changed by a click, then confirmed
   await sleep(1200);
-  await click('[data-q=q2_modality] .opt:nth-child(1)');      // OCT (the AI: Angio)
+  await click('[data-q=q2_modality] .opt:nth-child(2)');      // OCT (the AI: Angio)
   check("AI: a clicked answer is the reviewer's; the rest stay the AI's", (await ann("T003")).q2_modality === "oct" && !(await ann("T003")).q1_ophthalmic &&
     (await js(`document.querySelectorAll("#qlist .opt.ai").length`)) === 6);
   await shot("a3_changed_one.png");

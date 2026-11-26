@@ -1,5 +1,5 @@
 {
-  "rubric_version": "rubric-v1",
+  "rubric_version": "rubric-v1-table",
   "intro": "Thank you for helping us audit **a dataset of ophthalmic images paired with text descriptions**, built from expert teaching videos. Each case shows **one image** taken from a video, the **description** that the dataset pairs with it, and the **narration**: what the expert said at that moment (an automatic transcript, plus the audio clip). **Judge the DESCRIPTION**: does it match the image, is it supported by the narration, is it clinically accurate? Use the **transcript as the reference** for what was said. Answer the 7 questions for each case; most cases take 20–40 seconds, so plan about **1 hour per 100 cases**. Your work is saved automatically, so you can stop and continue later. In question 7, **flag anything patient-identifying**: a face or eye-region photo, a name, ID/MRN, date of birth, or an exam/visit date.",
   "notes": [
     "Judge the **description**, not the narration or the speaker. The narration is only the reference for Q5.",
@@ -21,34 +21,29 @@
     {
       "id": "q1_ophthalmic",
       "title": "Is this an ophthalmic clinical image (not a slide of text, presenter, or chart)?",
-      "short": "Ophthalmic image?",
-      "help": "**Yes** when the main content is a real clinical image of the eye (any modality); a clinical image with annotations, arrows or labels on it is still Yes. **No** for slides that are mostly text, charts or graphs, schematics or drawings, and presenter video. If you answer No, questions 2–6 are skipped (recorded as N/A).",
+      "short": "Ophthalmic image",
+      "help": "**Valid** when the main content is a real clinical image of the eye (any modality); labels or arrows on it do not matter. **Invalid** for text slides, charts, schematics, people, logos or blank frames.",
       "required": true,
       "skip_if": null,
       "na_code": null,
       "options": [
         {
           "code": "yes",
-          "label": "Yes",
-          "help": "A real clinical image of the eye or an ophthalmic imaging/test result (OCT, fundus photo, angiography, slit lamp, external eye, ultrasound, topography, visual field, surgical view, and so on), also when annotations, arrows or labels are drawn on it."
+          "label": "Valid",
+          "help": "A real clinical image of the eye or an ophthalmic imaging/test result (any modality); annotations, arrows or labels on it are fine."
         },
         {
           "code": "no",
-          "label": "No",
-          "help": "Not a clinical image: a slide that is mostly text, a chart, graph or table, a schematic, drawing or cartoon, the presenter or another person on video, a logo or title card, or a blank or transition frame.",
+          "label": "Invalid",
+          "help": "Not a clinical image: a slide that is mostly text, a chart or table, a schematic or drawing, the presenter or another person, a logo or title card, or a blank frame. Questions 2-6 are then skipped.",
           "reports_problem": true
-        },
-        {
-          "code": "unsure",
-          "label": "Unsure",
-          "help": "You cannot tell (too small, too blurry, or an ambiguous mix of clinical image and slide). Questions 2–6 are still asked."
         }
       ]
     },
     {
       "id": "q2_modality",
       "title": "What is the imaging modality?",
-      "short": "Modality",
+      "short": "Imaging modality",
       "help": "The modality of the clinical image. Choose **Multi** only when separate panels of different modalities are shown (e.g., a fundus photo next to an OCT B-scan); several panels of the same modality get that modality. OCT angiography counts as **Angio**; fundus autofluorescence, infrared/SLO and red-free images count as **Other**.",
       "required": true,
       "skip_if": {
@@ -59,39 +54,34 @@
       "na_code": "na",
       "options": [
         {
+          "code": "multi",
+          "label": "Multi",
+          "help": "Two or more modalities shown as separate panels (e.g. a fundus photo next to an OCT B-scan)."
+        },
+        {
           "code": "oct",
           "label": "OCT",
-          "help": "Structural OCT: B-scan cross-sections, en-face slabs, or thickness/deviation maps; posterior or anterior segment. (OCT angiography: choose Angio.)"
+          "help": "Optical coherence tomography (B-scan, thickness or en-face map)."
         },
         {
           "code": "cfp",
           "label": "CFP",
-          "help": "Color fundus photograph with a standard field (about 30–60°), including montages. (Red-free: choose Other.)"
-        },
-        {
-          "code": "uwf",
-          "label": "UWF",
-          "help": "Ultra-widefield fundus image (about 100–200°, e.g., Optos pseudo-color or widefield color), without dye."
+          "help": "Colour fundus photograph (standard field)."
         },
         {
           "code": "angio",
           "label": "Angio",
-          "help": "Fluorescein angiography (FA), indocyanine green angiography (ICGA) or OCT angiography (OCTA), any field of view."
+          "help": "Fluorescein or ICG angiography, or OCT angiography."
         },
         {
           "code": "other",
           "label": "Other",
-          "help": "Another ophthalmic modality: fundus autofluorescence (FAF), infrared/SLO, red-free, slit-lamp, anterior segment or external photo, ultrasound (B-scan, UBM), corneal topography/tomography, specular microscopy, visual field, surgical view, histology, orbital CT/MRI."
+          "help": "Another ophthalmic image: autofluorescence, infrared/SLO, red-free, anterior segment, ultrasound, visual field..."
         },
         {
-          "code": "multi",
-          "label": "Multi",
-          "help": "Two or more modalities shown as separate panels (e.g., a fundus photo next to an OCT B-scan, or FA beside OCT)."
-        },
-        {
-          "code": "unsure",
-          "label": "Unsure",
-          "help": "You cannot tell the modality from the image."
+          "code": "uwf",
+          "label": "UWF",
+          "help": "Ultra-widefield fundus image."
         }
       ]
     },
@@ -111,17 +101,17 @@
         {
           "code": "good",
           "label": "Good",
-          "help": "The relevant region is fully inside the crop and unobstructed, with little irrelevant surround (borders, slide text, video player controls)."
+          "help": "The clinically relevant region is fully kept, with little clutter."
         },
         {
           "code": "partial",
           "label": "Partial",
-          "help": "Partly cut off or cluttered but still interpretable: part of the relevant region is missing, or much of the crop is slide text, other panels, the presenter or overlays."
+          "help": "The relevant region is partly cut off or surrounded by much unrelated slide content."
         },
         {
           "code": "bad",
-          "label": "Bad",
-          "help": "The key region is largely cut off, hidden, or only a small part of the crop, so the image cannot be interpreted properly.",
+          "label": "Poor",
+          "help": "The relevant region is mostly lost, or the crop shows the wrong part of the frame.",
           "reports_problem": true
         }
       ]
@@ -129,7 +119,7 @@
     {
       "id": "q4_image_text",
       "title": "Does the description match what is visible in the image?",
-      "short": "Matches image?",
+      "short": "Image and text alignment",
       "help": "Compare the description with the image only. Count the visual claims (modality, anatomy, findings and their location); statements that no image could show (history, symptoms, treatment) neither help nor hurt.",
       "required": true,
       "skip_if": {
@@ -142,17 +132,17 @@
         {
           "code": "full",
           "label": "Full",
-          "help": "Every visual claim is consistent with the image."
+          "help": "The description fits what is visible (imaging type, anatomy, findings)."
         },
         {
           "code": "partial",
           "label": "Partial",
-          "help": "Fits the image overall, but at least one visual claim is not visible, doubtful, or wrong (e.g., a finding you cannot see, a wrong location or layer)."
+          "help": "Some of the description fits; part of it is not visible or does not fit."
         },
         {
           "code": "none",
-          "label": "None",
-          "help": "Does not correspond to this image: different modality or anatomy, the described findings are clearly absent, or it describes another image.",
+          "label": "Mismatch",
+          "help": "The description does not fit this image.",
           "reports_problem": true
         }
       ]
@@ -160,7 +150,7 @@
     {
       "id": "q5_faithful",
       "title": "Does the description invent anything (not supported by the narration or the image)?",
-      "short": "Invented content?",
+      "short": "Invented content",
       "help": "Only fabrication counts. Leaving things out is fine; paraphrase and standard terminology are fine; a detail that the narration does not mention but that is clearly visible in the image is fine. Your own clinical opinion belongs in Q6, not here.",
       "required": true,
       "skip_if": {
@@ -172,31 +162,26 @@
       "options": [
         {
           "code": "full",
-          "label": "No",
-          "help": "Everything in the description is said or implied in the narration, or clearly visible in the image. Omissions do not matter."
+          "label": "None",
+          "help": "Everything in the description is said or implied in the narration, or clearly visible in the image."
         },
         {
           "code": "partial",
-          "label": "Minor",
-          "help": "A small detail that neither the narration nor the image supports, but that does not change the clinical meaning (e.g. a generic term, an unneeded qualifier)."
+          "label": "Possible",
+          "help": "A detail neither the narration nor the image clearly supports, but it does not change the clinical meaning."
         },
         {
           "code": "unsupported",
-          "label": "Yes",
-          "help": "States a finding, diagnosis, imaging modality, location or number that neither the narration nor the image supports, or that contradicts them. Turning a hedged statement ('possible CNV') into a definite diagnosis counts too.",
+          "label": "Confirmed",
+          "help": "States a finding, diagnosis, imaging modality, location or number that neither the narration nor the image supports, or that contradicts them.",
           "reports_problem": true
-        },
-        {
-          "code": "cant_judge",
-          "label": "Can't judge",
-          "help": "The narration is missing, unintelligible, or too fragmentary, and the image does not settle it."
         }
       ]
     },
     {
       "id": "q6_clinical",
       "title": "Is the description clinically accurate?",
-      "short": "Clinically accurate?",
+      "short": "Clinical accuracy",
       "help": "Your own clinical judgment of the description for this image, whatever the narration said.",
       "required": true,
       "skip_if": {
@@ -208,31 +193,21 @@
       "options": [
         {
           "code": "correct",
-          "label": "Correct",
-          "help": "Clinically accurate: the terminology and the findings are right for this image."
-        },
-        {
-          "code": "minor",
-          "label": "Minor",
-          "help": "A minor inaccuracy that would not mislead: imprecise wording, a slightly wrong term or location, a missing qualifier."
+          "label": "Consistent",
+          "help": "The description is clinically consistent with the image and the narration."
         },
         {
           "code": "major",
-          "label": "Major",
-          "help": "Clinically wrong or misleading: wrong diagnosis, misidentified finding (e.g., drusen called exudates), wrong modality or anatomy, or a statement that could lead to a wrong clinical conclusion.",
+          "label": "No consensus",
+          "help": "The description contains a clinically questionable or incorrect statement.",
           "reports_problem": true
-        },
-        {
-          "code": "cant_judge",
-          "label": "Can't judge",
-          "help": "You cannot judge the accuracy: poor image, a description too vague, or outside your expertise."
         }
       ]
     },
     {
       "id": "q7_pii",
       "title": "Is any patient-identifying information visible?",
-      "short": "Patient-identifying?",
+      "short": "Patient identifiers",
       "help": "Check the whole image, including corners and overlays, also when it is not a clinical image. **Yes** = a face or eye-region photo of a person, a patient name, ID/MRN, date of birth, or a date tied to the patient (exam, visit or imaging date). Age, sex, presenter or institution logos, channel watermarks and video-call logos (e.g., Zoom) are **not** patient-identifying: answer **No**, but mention them in the note.",
       "required": true,
       "skip_if": null,
@@ -240,13 +215,13 @@
       "options": [
         {
           "code": "no",
-          "label": "No",
-          "help": "Nothing patient-identifying is visible. Age, sex, device names, presenter or institution logos, channel watermarks and video-call logos (e.g., Zoom) do not count: answer No, and mention them in the note."
+          "label": "Absent",
+          "help": "No patient-identifying information is visible."
         },
         {
           "code": "yes",
-          "label": "Yes",
-          "help": "A face or eye-region photo of a person, a patient name, ID/MRN, date of birth, or a date tied to the patient (exam, visit or imaging date). Say what and where in the note. If unsure, choose Yes and explain in the note.",
+          "label": "Present",
+          "help": "A patient's face, name, ID/MRN, date of birth or a date tied to the patient is visible; say what and where in the note.",
           "reports_problem": true,
           "note_required": true
         }

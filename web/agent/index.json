@@ -2,8 +2,8 @@
   "name": "Ophthalmic image-description audit: agent entry",
   "what": "Machine-readable entry to the static audit page. Human raters judge, for each case, one ophthalmic image, the text description paired with it, and the narration (transcript) it was derived from, answering 7 questions. An automated rater (an LLM through an API) can answer the same cases and produce the same export file. There is no server: fetch these files, answer locally, and send the export file to the study team. LLM ratings are a pilot comparison and are analysed separately from the clinicians' audit.",
   "agent_spec_version": "agent-spec-v1",
-  "rubric_version": "rubric-v1",
-  "manifest_version": "train-v1-2026-11-18",
+  "rubric_version": "rubric-v1-table",
+  "manifest_version": "test100-hq-2026-11-26",
   "n_cases": 100,
   "site": "https://llm-vlm-gsl.github.io/Ophth-Auditor/",
   "links": {
@@ -14,9 +14,9 @@
     "page": "../index.html"
   },
   "sha256": {
-    "rubric.json": "6dbf3172b0e203b257c0c37bbdfabefcabaa4c652e8eace60916d49284c24f32",
-    "tasks.jsonl": "366e8523df2fbdce6a5fdc1ab351426067da0bc701a6327919bb96026bd8d6c4",
-    "output_schema.json": "aac96fb56c230f65b72d05046c4ad6e229087dd2cf39ebcd13716679e68b92b5"
+    "rubric.json": "e180f3a565876e4526038f71f54aea19eb0af6dd9e214fc3021e8c4a2c561eb1",
+    "tasks.jsonl": "3e4739462c91a81d971e8ffa8c7940410bab4f375fe624acf899065888aa78c3",
+    "output_schema.json": "616d33db28d3ff04ad27abd7645e2941b91d628388892c660789968cb6fd1bb9"
   },
   "media": "Relative media paths in tasks.jsonl ('image', 'audio') are relative to the site root (the folder of index.html, one level above this file); 'image_url' / 'audio_url' are absolute.",
   "export": {
@@ -37,8 +37,8 @@
     "constants": {
       "tool": "ophth-audit",
       "tool_version": "1.0",
-      "rubric_version": "rubric-v1",
-      "manifest_version": "train-v1-2026-11-18"
+      "rubric_version": "rubric-v1-table",
+      "manifest_version": "test100-hq-2026-11-26"
     },
     "rater": {
       "name": "for an LLM: '<provider>/<model>' (with '#<k>' for repeated runs of the same model)",
@@ -54,8 +54,8 @@
     "example": {
       "tool": "ophth-audit",
       "tool_version": "1.0",
-      "rubric_version": "rubric-v1",
-      "manifest_version": "train-v1-2026-11-18",
+      "rubric_version": "rubric-v1-table",
+      "manifest_version": "test100-hq-2026-11-26",
       "exported_at": "2026-11-18T10:31:05-07:00",
       "rater": {
         "name": "anthropic/claude-opus-5-5",
@@ -63,7 +63,7 @@
         "years_experience": null
       },
       "annotations": {
-        "B001": {
+        "T264": {
           "q1_ophthalmic": "yes",
           "q2_modality": "oct",
           "q3_crop": "good",
